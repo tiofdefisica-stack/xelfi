@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xelfi</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0b14;--surf:#16121f;--card:#1c1729;--bor:#2e2540;--acc:#9b35e8;--acc2:#c060ff;--txt:#ede8f5;--mut:#7a6a9a;--red:#ff4d6d;--grn:#4ade80;--yel:#fbbf24;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--txt);font-family:'Nunito Sans',sans-serif;min-height:100vh;}
+.logo{display:inline-flex;align-items:center;cursor:pointer;user-select:none;gap:2px;}
+.logo-x{display:inline-block;font-family:'Comic Sans MS','Chalkboard SE',cursive;font-weight:900;font-size:2.2em;color:#9b2dc8;-webkit-text-stroke:3px #6a0a9e;text-shadow:2px 2px 0 #6a0a9e,-1px -1px 0 #6a0a9e,1px -1px 0 #6a0a9e,-1px 1px 0 #6a0a9e;font-style:italic;line-height:1;}
+.logo-e{display:inline-block;font-family:'Nunito',sans-serif;font-weight:900;font-size:1.35em;color:#9b2dc8;line-height:1;}
+nav .logo-x{font-size:1.8em;}
+nav .logo-e{font-size:1.1em;}
+.auth-logo .logo-x{font-size:3.4em;-webkit-text-stroke:4px #6a0a9e;}
+.auth-logo .logo-e{font-size:2.1em;}
+nav{position:sticky;top:0;z-index:200;background:#0e0b14ee;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:54px;backdrop-filter:blur(12px);}
+.nav-r{display:flex;gap:6px;align-items:center;}
+.nbtn{background:transparent;color:var(--mut);border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700;font-size:13px;font-family:'Nunito',sans-serif;transition:all .15s;}
+.nbtn:hover{background:#9b35e810;color:var(--acc2);}
+.main{max-width:600px;margin:0 auto;padding:18px 14px;}
+.card{background:var(--card);border:1px solid var(--bor);border-radius:16px;padding:16px;margin-bottom:12px;animation:fu .2s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.btn{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#fff;border:none;border-radius:9px;padding:10px 18px;cursor:pointer;font-weight:800;font-size:14px;font-family:'Nunito',sans-serif;transition:all .15s;box-shadow:0 4px 14px #9b35e840;}
+.btn:hover{transform:translateY(-1px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.btn-o{background:transparent;color:var(--mut);border:1px solid var(--bor);border-radius:8px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:13px;font-family:'Nunito',sans-serif;transition:all .15s;}
+.btn-o:hover{border-color:var(--acc);color:var(--acc2);}
+input,textarea,select{background:var(--surf);border:1.5px solid var(--bor);border-radius:10px;padding:10px 13px;color:var(--txt);font-size:14px;width:100%;outline:none;font-family:'Nunito Sans',sans-serif;transition:border .15s;-webkit-user-select:text;user-select:text;}
+input:focus,textarea:focus,select:focus{border-color:var(--acc);}
+textarea{resize:none;line-height:1.6;}
+select option{background:var(--card);}
+.av{border-radius:50%;background:linear-gradient(135deg,#9b35e830,#c060ff30);border:2px solid #9b35e855;display:flex;align-items:center;justify-content:center;flex-shrink:0;user-select:none;}
+.av img{border-radius:50%;object-fit:cover;border:2px solid #9b35e855;}
+.tag{border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800;font-family:'Nunito',sans-serif;}
+.tag-pub{background:#4ade8018;color:var(--grn);}
+.tag-fri{background:#fbbf2418;color:var(--yel);}
+.tag-prv{background:#ff4d6d18;color:var(--red);}
+.tag-def{background:#9b35e818;color:var(--acc2);}
+.fl{font-size:11px;color:var(--mut);margin-bottom:4px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-family:'Nunito',sans-serif;}
+.av-pick{display:flex;gap:7px;flex-wrap:wrap;}
+.av-btn{font-size:19px;background:transparent;border:2px solid var(--bor);border-radius:8px;padding:3px 6px;cursor:pointer;transition:all .15s;}
+.av-btn.sel{background:#9b35e820;border-color:var(--acc);}
+.lnk{color:var(--acc2);cursor:pointer;font-weight:700;}
+.lnk:hover{text-decoration:underline;}
+.err{color:var(--red);font-size:13px;padding:8px 12px;background:#ff4d6d15;border-radius:8px;border:1px solid #ff4d6d33;}
+.spin{width:16px;height:16px;border:2px solid #fff4;border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;display:inline-block;vertical-align:middle;margin-right:5px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.ph{display:flex;gap:11px;margin-bottom:11px;}
+.ph-info{flex:1;}
+.ph-name{font-weight:800;font-size:14px;font-family:'Nunito',sans-serif;transition:color .15s;}
+.ph-meta{font-size:12px;color:var(--mut);}
+.act-row{display:flex;gap:7px;padding-top:10px;border-top:1px solid var(--bor);flex-wrap:wrap;}
+.react-panel{position:absolute;bottom:100%;left:0;background:var(--card);border:1px solid var(--bor);border-radius:50px;padding:6px 10px;display:flex;gap:6px;box-shadow:0 4px 16px #00000088;z-index:100;animation:fu .15s ease;}
+.react-btn{font-size:22px;background:transparent;border:none;cursor:pointer;border-radius:50%;padding:4px;transition:transform .15s;}
+.react-btn:hover{transform:scale(1.3);}
+.react-count{font-size:12px;color:var(--mut);margin-left:2px;}
+.ab{display:flex;align-items:center;gap:5px;background:transparent;border:1px solid var(--bor);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:700;color:var(--mut);font-family:'Nunito',sans-serif;transition:all .15s;}
+.ab:hover{border-color:var(--acc);color:var(--acc2);}
+.ab.liked{background:#ff4d6d15;border-color:#ff4d6d55;color:var(--red);}
+.ab.copen{background:#9b35e815;border-color:#9b35e855;color:var(--acc2);}
+.ab.reposted{background:#4ade8015;border-color:#4ade8055;color:var(--grn);}
+.cmts{margin-top:11px;}
+.ci{display:flex;gap:8px;margin-bottom:9px;}
+.cb{background:var(--surf);border-radius:10px;padding:8px 11px;flex:1;border:1px solid var(--bor);}
+.ca{font-weight:800;font-size:13px;font-family:'Nunito',sans-serif;cursor:pointer;}
+.ca:hover{color:var(--acc2);}
+.ct2{color:var(--mut);font-size:11px;margin-left:5px;}
+.ctxt{font-size:14px;line-height:1.5;margin-top:3px;}
+.ci-row{display:flex;gap:8px;margin-top:9px;align-items:center;position:relative;}
+.ci-row input{flex:1;padding:8px 12px;font-size:13px;}
+.sbtn{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:14px;}
+.mention-box{position:absolute;bottom:100%;left:40px;background:var(--card);border:1px solid var(--bor);border-radius:10px;z-index:300;min-width:180px;display:none;box-shadow:0 4px 16px #00000088;max-height:200px;overflow-y:auto;}
+.mention-opt{padding:8px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;}
+.mention-opt:hover{background:var(--surf);}
+.sug-row{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;}
+.sug{background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:center;min-width:90px;flex-shrink:0;transition:all .15s;}
+.sug:hover{border-color:var(--acc);transform:translateY(-2px);}
+.sl{font-size:11px;font-weight:800;color:var(--mut);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;font-family:'Nunito',sans-serif;}
+.empty{text-align:center;color:var(--mut);padding:50px 20px;font-size:15px;}
+.load{text-align:center;color:var(--mut);padding:30px;}
+.bell-w{position:relative;display:inline-flex;}
+.nbadge{position:absolute;top:1px;right:1px;background:var(--red);color:#fff;border-radius:50%;width:15px;height:15px;font-size:10px;font-weight:800;display:none;align-items:center;justify-content:center;pointer-events:none;font-family:'Nunito',sans-serif;}
+.npanel{position:fixed;top:54px;right:8px;width:300px;max-width:95vw;background:var(--card);border:1px solid var(--bor);border-radius:14px;z-index:9999;box-shadow:0 8px 32px #00000099;max-height:420px;overflow-y:auto;}
+.npanel-hdr{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--bor);}
+.ni{display:flex;gap:9px;padding:10px 14px;border-bottom:1px solid #2e254033;cursor:pointer;align-items:flex-start;}
+.ni.unread{background:#9b35e808;}
+.ndot{width:7px;height:7px;border-radius:50%;background:var(--acc2);flex-shrink:0;margin-top:4px;}
+.prof-av-w{position:relative;flex-shrink:0;cursor:pointer;}
+.prof-av-w:hover .av-ov{opacity:1;}
+.av-ov{position:absolute;inset:0;border-radius:50%;background:#00000088;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:16px;color:#fff;}
+.pstats{display:flex;gap:16px;margin-top:8px;}
+.pstat{font-size:13px;}
+.pstat b{font-family:'Nunito',sans-serif;font-weight:900;}
+.pstat span{color:var(--mut);}
+.priv-sel{padding:6px 10px;font-size:12px;width:auto;border-radius:8px;}
+.block-banner{background:#ff4d6d15;border:1px solid #ff4d6d33;border-radius:10px;padding:12px;text-align:center;color:var(--red);font-size:14px;margin-bottom:12px;}
+.lock-msg{background:#fbbf2415;border:1px solid #fbbf2433;border-radius:10px;padding:12px;text-align:center;color:var(--yel);font-size:14px;margin-bottom:12px;}
+.group-card{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--bor);cursor:pointer;}
+.group-card:hover .group-name{color:var(--acc2);}
+.group-name{font-weight:800;font-size:14px;font-family:Nunito,sans-serif;transition:color .15s;}
+.group-meta{font-size:12px;color:var(--mut);margin-top:2px;}
+.group-avatar{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.page-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#ff4d6d);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.tab-row{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--bor);}
+.tab{background:transparent;border:none;color:var(--mut);font-weight:700;font-size:14px;font-family:Nunito,sans-serif;padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab.active{color:var(--acc2);border-bottom-color:var(--acc2);}
+.member-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bor);}
+.member-row:last-child{border-bottom:none;}
+.repost-banner{font-size:12px;color:var(--mut);margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.chat-list-item{display:flex;gap:10px;padding:12px 14px;border-bottom:1px solid var(--bor);cursor:pointer;align-items:center;transition:background .15s;}
+.chat-list-item:hover{background:var(--surf);}
+.chat-list-item.unread{background:#9b35e808;}
+.chat-unread-dot{width:9px;height:9px;border-radius:50%;background:var(--acc2);flex-shrink:0;}
+.chat-preview{font-size:13px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.chat-name{font-weight:800;font-size:14px;font-family:Nunito,sans-serif;}
+.msg-wrap{display:flex;flex-direction:column;gap:8px;padding:12px 4px;}
+.msg-row{display:flex;gap:8px;align-items:flex-end;width:100%;}
+.msg-row.mine{flex-direction:row-reverse;}
+.msg-bubble{max-width:calc(100% - 50px);min-width:80px;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.6;word-break:break-word;white-space:pre-wrap;overflow-wrap:anywhere;}
+.msg-bubble.theirs{background:var(--surf);border:1px solid var(--bor);border-bottom-left-radius:4px;}
+.msg-bubble.mine{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#fff;border-bottom-right-radius:4px;}
+.msg-time{font-size:10px;color:var(--mut);margin-top:2px;text-align:center;padding:0 4px;}
+.chat-input-row{display:flex;gap:8px;align-items:center;padding:12px 0 0;border-top:1px solid var(--bor);margin-top:8px;}
+.chat-input-row input{flex:1;}
+.comp-wrap{position:relative;flex:1;}
+.comp-mbox{position:absolute;bottom:100%;left:0;background:var(--card);border:1px solid var(--bor);border-radius:10px;z-index:300;min-width:180px;display:none;box-shadow:0 4px 16px #00000088;max-height:200px;overflow-y:auto;}
+</style>
+</head>
+<body>
+<div id="app"><div class="load" style="padding:80px;font-size:16px">Cargando Xelfi...</div></div>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,collection,addDoc,getDocs,doc,getDoc,setDoc,updateDoc,deleteDoc,query,orderBy,onSnapshot,arrayUnion,arrayRemove,increment,serverTimestamp,deleteField}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const FB={apiKey:"AIzaSyA695OTVjRtgTuw3-cqjPTyZ9O02eI_n5k",authDomain:"xelfi-7e2bf.firebaseapp.com",projectId:"xelfi-7e2bf",storageBucket:"xelfi-7e2bf.firebasestorage.app",messagingSenderId:"261957011071",appId:"1:261957011071:web:795d4bcfd0902bc157214a"};
+const fbApp=initializeApp(FB);
+const auth=getAuth(fbApp);
+const db=getFirestore(fbApp);
+
+const AVK=['star','moon','scope','flower','rocket','wave','fly','guitar','lab','cherry','bolt','target','fox','fish','palm'];
+const AVE={star:'&#11088;',moon:'&#127769;',scope:'&#128301;',flower:'&#127802;',rocket:'&#128640;',wave:'&#127754;',fly:'&#129419;',guitar:'&#127928;',lab:'&#128300;',cherry:'&#127800;',bolt:'&#9889;',target:'&#127919;',fox:'&#129418;',fish:'&#128044;',palm:'&#127796;'};
+const em=k=>AVE[k]||k||'&#11088;';
+
+const S={view:'login',cu:null,me:null,pid:null,np:'',ni2:'',npv:'public',rf:{n:'',h:'',b:'',av:'star',e:'',p:''},lf:{e:'',p:''},le:'',re:'',oc:{},ct:{},sav:'star',posts:[],users:{},notifs:[],unread:0,friends:[],chatWith:null,msgText:'',msgUnread:0,blocked:[],blockedBy:[],groupId:null,pageId:null,pageCache:{},gf:{name:'',desc:'',emoji:'&#127775;'},pf:{name:'',desc:'',emoji:'&#127381;'}};
+
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const logoHTML=()=>'<span class="logo"><span class="logo-x">X</span><span class="logo-e">elfi</span></span>';
+
+function avEl(p,sz=40){
+  if(p&&(p.photo||p.photoURL)){
+    const img=document.createElement('img');
+    img.src=p.photo||p.photoURL;img.style.cssText='width:'+sz+'px;height:'+sz+'px;border-radius:50%;object-fit:cover;border:2px solid #9b35e855;flex-shrink:0;';
+    return img;
+  }
+  const d=document.createElement('div');d.className='av';
+  d.style.cssText='width:'+sz+'px;height:'+sz+'px;font-size:'+Math.round(sz*.42)+'px;';
+  d.innerHTML=em(p&&p.avatar);return d;
+}
+
+function makeNav(r){
+  const nav=document.createElement('nav');
+  const lw=document.createElement('div');lw.innerHTML=logoHTML();
+  lw.querySelector('.logo').onclick=()=>{if(S.cu){S.view='feed';render();}};
+  nav.appendChild(lw);nav.appendChild(r);return nav;
+}
+
+function timeAgo(ts){
+  if(!ts)return'ahora mismo';
+  const d=ts.toDate?ts.toDate():new Date(ts);
+  const s=Math.floor((Date.now()-d)/1000);
+  if(s<60)return'ahora mismo';
+  if(s<3600)return'hace '+Math.floor(s/60)+' min';
+  if(s<86400)return'hace '+Math.floor(s/3600)+' h';
+  return'hace '+Math.floor(s/86400)+' dias';
+}
+
+async function loadU(uid){
+  if(S.users[uid])return S.users[uid];
+  const sn=await getDoc(doc(db,'users',uid));
+  if(sn.exists()){S.users[uid]=sn.data();return S.users[uid];}
+  return null;
+}
+
+async function loadFriends(){
+  if(!S.cu)return;
+  const sn=await getDocs(collection(db,'friendships'));
+  S.friends=[];
+  sn.forEach(d=>{
+    const f=d.data();
+    if(f.status==='accepted'){
+      if(f.from===S.cu.uid)S.friends.push(f.to);
+      else if(f.to===S.cu.uid)S.friends.push(f.from);
+    }
+  });
+}
+
+const isFriend=uid=>S.friends.includes(uid);
+
+function canSee(post){
+  if(!post.privacy||post.privacy==='public')return true;
+  if(post.userId===S.cu.uid)return true;
+  if(post.privacy==='friends')return isFriend(post.userId);
+  return false;
+}
+
+function formatText(txt){
+  if(!txt)return'';
+  // Step 1: escape only special HTML chars except we handle them manually
+  // Split text into parts: urls, mentions, hashtags, and plain text
+  const parts=[];
+  const regex=/(https?:\/\/[^\s<>"]+)|(@[a-zA-Z0-9_]+)|(#[a-zA-Z0-9_À-ž]+)|([^@#h]+|h(?!ttps?:\/\/))/g;
+  let m;
+  while((m=regex.exec(txt))!==null){
+    if(m[1]){// URL
+      parts.push('<a href="'+esc(m[1])+'" target="_blank" rel="noopener noreferrer" style="color:#c060ff;text-decoration:underline;word-break:break-all;">'+esc(m[1])+'</a>');
+    } else if(m[2]){// @mention
+      parts.push('<span style="color:#c060ff;font-weight:700">'+esc(m[2])+'</span>');
+    } else if(m[3]){// #hashtag
+      parts.push('<span style="color:#9b35e8;font-weight:700">'+esc(m[3])+'</span>');
+    } else if(m[4]){// plain text
+      parts.push(esc(m[4]));
+    }
+  }
+  return parts.join('');
+}
+
+// NOTIFICATIONS
+let unsubN=null;
+function listenNotifs(uid){
+  if(unsubN)unsubN();
+  unsubN=onSnapshot(query(collection(db,'notifications'),orderBy('createdAt','desc')),sn=>{
+    S.notifs=[];
+    sn.forEach(d=>{const n={id:d.id,...d.data()};if(n.toUserId===uid)S.notifs.push(n);});
+    S.unread=S.notifs.filter(n=>!n.read).length;
+    const b=document.getElementById('nbadge');
+    if(b){b.textContent=S.unread;b.style.display=S.unread>0?'flex':'none';}
+  });
+}
+
+async function addNotif(toUid,type,postId,extra){
+  if(!toUid||toUid===S.cu.uid)return;
+  await addDoc(collection(db,'notifications'),{toUserId:toUid,type,fromUserId:S.cu.uid,fromName:S.me.name,fromAvatar:S.me.avatar||'star',postId:postId||null,extra:extra||null,read:false,createdAt:serverTimestamp()});
+}
+
+async function markRead(){
+  for(const n of S.notifs.filter(x=>!x.read))
+    await updateDoc(doc(db,'notifications',n.id),{read:true});
+}
+
+function notifTxt(n){
+  if(n.type==='like')return n.fromName+' le dio like a tu post';
+  if(n.type==='comment')return n.fromName+' comento tu post';
+  if(n.type==='freq')return n.fromName+' quiere ser tu amigo';
+  if(n.type==='facc')return n.fromName+' acepto tu solicitud';
+  if(n.type==='repost')return n.fromName+' republico tu post';
+  if(n.type==='message')return n.fromName+' te envio un mensaje';
+  if(n.type==='gjoin')return n.fromName+' quiere unirse a tu grupo';
+  if(n.type==='gjoined')return 'Tu solicitud al grupo fue aceptada';
+  if(n.type==='pfollowed')return n.fromName+' sigue tu pagina';
+  if(n.type==='featured')return 'Tu post fue destacado por el admin';
+  return'Nueva notificacion';
+}
+
+function renderNotifPanel(){
+  const panel=document.createElement('div');panel.id='npanel';panel.className='npanel';
+  const hdr=document.createElement('div');hdr.className='npanel-hdr';
+  const title=document.createElement('span');title.style.cssText='font-weight:800;font-family:Nunito,sans-serif;font-size:15px';title.textContent='Notificaciones';
+  const markBtn=document.createElement('button');markBtn.style.cssText='background:transparent;border:none;color:var(--acc2);font-size:12px;font-weight:700;cursor:pointer;';markBtn.textContent='Todo leido';
+  markBtn.onclick=()=>markRead();
+  hdr.appendChild(title);hdr.appendChild(markBtn);panel.appendChild(hdr);
+  if(!S.notifs.length){
+    const e=document.createElement('div');e.style.cssText='text-align:center;color:var(--mut);padding:24px;font-size:14px;';e.textContent='Sin notificaciones';panel.appendChild(e);
+  } else {
+    S.notifs.slice(0,20).forEach(n=>{
+      const item=document.createElement('div');item.className='ni'+(n.read?'':' unread');
+      const emS=document.createElement('span');emS.style.cssText='font-size:19px;flex-shrink:0';emS.innerHTML=em(n.fromAvatar);
+      const cont=document.createElement('div');cont.style.flex='1';
+      const txt=document.createElement('div');txt.style.cssText='font-size:13px;line-height:1.4';txt.textContent=notifTxt(n);
+      const time=document.createElement('div');time.style.cssText='font-size:11px;color:var(--mut);margin-top:2px';time.textContent=timeAgo(n.createdAt);
+      cont.appendChild(txt);cont.appendChild(time);
+      if(n.type==='freq'&&n.extra){
+        const br=document.createElement('div');br.style.cssText='display:flex;gap:6px;margin-top:6px';
+        const ab=document.createElement('button');ab.style.cssText='background:var(--acc);color:#fff;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700;';ab.textContent='Aceptar';
+        ab.onclick=async e=>{
+          e.stopPropagation();
+          await updateDoc(doc(db,'friendships',n.extra),{status:'accepted'});
+          await updateDoc(doc(db,'notifications',n.id),{read:true});
+          await addNotif(n.fromUserId,'facc',null,null);
+          await loadFriends();
+          const p=document.getElementById('npanel');if(p)p.remove();
+          render();
+        };
+        const rb=document.createElement('button');rb.style.cssText='background:#ff4d6d22;color:var(--red);border:1px solid #ff4d6d44;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:700;';rb.textContent='Rechazar';
+        rb.onclick=async e=>{
+          e.stopPropagation();
+          await deleteDoc(doc(db,'friendships',n.extra));
+          await updateDoc(doc(db,'notifications',n.id),{read:true});
+          const p=document.getElementById('npanel');if(p)p.remove();
+        };
+        br.appendChild(ab);br.appendChild(rb);cont.appendChild(br);
+      } else {
+        item.onclick=()=>{
+          markRead();
+          const p=document.getElementById('npanel');if(p)p.remove();
+          if(n.postId){S.view='feed';render();setTimeout(()=>{const el=document.getElementById('p-'+n.postId);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},700);}
+        };
+      }
+      item.appendChild(emS);item.appendChild(cont);
+      if(!n.read){const dot=document.createElement('div');dot.className='ndot';item.appendChild(dot);}
+      panel.appendChild(item);
+    });
+  }
+  return panel;
+}
+
+async function sendFriendReq(toUid){
+  const sn=await getDocs(collection(db,'friendships'));
+  let exists=false;
+  sn.forEach(d=>{const f=d.data();if((f.from===S.cu.uid&&f.to===toUid)||(f.from===toUid&&f.to===S.cu.uid))exists=true;});
+  if(exists)return false;
+  const ref=await addDoc(collection(db,'friendships'),{from:S.cu.uid,to:toUid,status:'pending',createdAt:serverTimestamp()});
+  await addNotif(toUid,'freq',null,ref.id);
+  return true;
+}
+
+// CHAT FUNCTIONS
+function getChatId(uid1, uid2){
+  return [uid1,uid2].sort().join('_');
+}
+
+async function listenMsgUnread(uid){
+  // Listen for unread messages
+  onSnapshot(collection(db,'chats'),async snap=>{
+    let total=0;
+    for(const d of snap.docs){
+      const chatId=d.id;
+      if(!chatId.includes(uid))continue;
+      const msgsSnap=await getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','desc')));
+      msgsSnap.forEach(m=>{const msg=m.data();if(msg.to===uid&&!msg.read)total++;});
+    }
+    S.msgUnread=total;
+    const b=document.getElementById('mbadge');
+    if(b){b.textContent=total;b.style.display=total>0?'flex':'none';}
+  });
+}
+
+async function renderMessages(app){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Feed';bk.onclick=()=>{S.view='feed';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const hCard=document.createElement('div');hCard.className='card';
+  const ht=document.createElement('h2');ht.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:14px;';ht.textContent='Mensajes';hCard.appendChild(ht);
+  if(!S.friends.length){
+    const e=document.createElement('div');e.style.cssText='color:var(--mut);font-size:14px;text-align:center;padding:20px 0;';e.textContent='Agrega amigos para poder enviar mensajes.';hCard.appendChild(e);
+  } else {
+    for(const fuid of S.friends){
+      const fu=await loadU(fuid);if(!fu)continue;
+      const chatId=getChatId(S.cu.uid,fuid);
+      // Get last message
+      let lastMsg=null;let unreadCount=0;
+      try{
+        const msgsSnap=await getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','desc')));
+        msgsSnap.forEach(m=>{const md=m.data();if(!lastMsg)lastMsg=md;if(md.to===S.cu.uid&&!md.read)unreadCount++;});
+      }catch(e){}
+      const item=document.createElement('div');item.className='chat-list-item'+(unreadCount>0?' unread':'');
+      const avD=avEl(fu,44);item.appendChild(avD);
+      const info=document.createElement('div');info.style.flex='1';info.style.overflow='hidden';
+      const nm=document.createElement('div');nm.className='chat-name';nm.textContent=fu.name;
+      const prev=document.createElement('div');prev.className='chat-preview';prev.textContent=lastMsg?lastMsg.text:'Iniciar conversacion...';
+      info.appendChild(nm);info.appendChild(prev);item.appendChild(info);
+      if(unreadCount>0){const dot=document.createElement('div');dot.className='chat-unread-dot';item.appendChild(dot);}
+      item.onclick=()=>{S.chatWith=fuid;S.view='chat';render();};
+      hCard.appendChild(item);
+    }
+  }
+  main.appendChild(hCard);wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+
+let unsubChat=null;
+async function renderChat(app){
+  const friend=await loadU(S.chatWith);if(!friend)return;
+  const chatId=getChatId(S.cu.uid,S.chatWith);
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Mensajes';bk.onclick=()=>{if(unsubChat)unsubChat();S.view='messages';render();};
+  const friendInfo=document.createElement('div');friendInfo.style.cssText='display:flex;align-items:center;gap:8px;';
+  friendInfo.appendChild(avEl(friend,30));
+  const fn=document.createElement('span');fn.style.cssText='font-weight:800;font-size:14px;font-family:Nunito,sans-serif;';fn.textContent=friend.name;
+  friendInfo.appendChild(fn);
+  nr.appendChild(bk);nr.appendChild(friendInfo);
+  wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';main.style.cssText='max-width:600px;margin:0 auto;padding:12px 14px;display:flex;flex-direction:column;height:calc(100vh - 54px);';
+  const msgsDiv=document.createElement('div');msgsDiv.id='msgs-container';msgsDiv.style.cssText='flex:1;overflow-y:auto;padding:8px 0;';
+  msgsDiv.innerHTML='<div class="load">Cargando...</div>';
+  // Input
+  const inputRow=document.createElement('div');inputRow.className='chat-input-row';
+  const msgInp=document.createElement('input');msgInp.placeholder='Escribe un mensaje...';msgInp.value=S.msgText||'';
+  msgInp.oninput=e=>S.msgText=e.target.value;
+  msgInp.onkeydown=async e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();await sendMsg(chatId,friend);}};
+  const sendB=document.createElement('button');sendB.className='sbtn';sendB.innerHTML='&#10148;';
+  sendB.onclick=async()=>await sendMsg(chatId,friend);
+  inputRow.appendChild(msgInp);inputRow.appendChild(sendB);
+  main.appendChild(msgsDiv);main.appendChild(inputRow);
+  wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+  // Mark messages as read
+  try{
+    const msgsSnap=await getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc')));
+    for(const d of msgsSnap.docs){const md=d.data();if(md.to===S.cu.uid&&!md.read)await updateDoc(doc(db,'chats',chatId,'messages',d.id),{read:true});}
+  }catch(e){}
+  // Listen to messages
+  if(unsubChat)unsubChat();
+  unsubChat=onSnapshot(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc')),async snap=>{
+    const con=document.getElementById('msgs-container');if(!con)return;
+    con.innerHTML='';
+    if(!snap.docs.length){con.innerHTML='<div style="text-align:center;color:var(--mut);padding:30px;font-size:14px;">Empieza la conversacion!</div>';return;}
+    const wrap2=document.createElement('div');wrap2.className='msg-wrap';
+    snap.docs.forEach(d=>{
+      const msg=d.data();const isMine=msg.from===S.cu.uid;
+      const row=document.createElement('div');row.className='msg-row'+(isMine?' mine':'');
+      const sender=isMine?S.me:friend;row.appendChild(avEl(sender,28));
+      const bub=document.createElement('div');bub.className='msg-bubble '+(isMine?'mine':'theirs');bub.textContent=msg.text;
+      const timeD=document.createElement('div');timeD.className='msg-time';timeD.textContent=timeAgo(msg.createdAt);
+      const col=document.createElement('div');col.style.cssText='display:flex;flex-direction:column;align-items:'+(isMine?'flex-end':'flex-start');
+      col.appendChild(bub);col.appendChild(timeD);row.appendChild(col);wrap2.appendChild(row);
+    });
+    con.appendChild(wrap2);
+    con.scrollTop=con.scrollHeight;
+    // Mark as read
+    snap.docs.forEach(async d=>{const md=d.data();if(md.to===S.cu.uid&&!md.read)await updateDoc(doc(db,'chats',chatId,'messages',d.id),{read:true});});
+  });
+}
+
+async function sendMsg(chatId,friend){
+  const text=S.msgText||'';if(!text.trim())return;
+  const inp=document.querySelector('.chat-input-row input');if(inp){inp.value='';S.msgText='';}
+  await addDoc(collection(db,'chats',chatId,'messages'),{from:S.cu.uid,to:S.chatWith,text,createdAt:serverTimestamp(),read:false});
+  await addNotif(S.chatWith,'message',null,null);
+}
+
+
+async function loadBlocked(){
+  if(!S.cu)return;
+  const sn=await getDocs(collection(db,'blocks'));
+  S.blocked=[];S.blockedBy=[];
+  sn.forEach(d=>{const b=d.data();if(b.by===S.cu.uid)S.blocked.push(b.uid);if(b.uid===S.cu.uid)S.blockedBy.push(b.by);});
+}
+async function blockUser(uid){
+  if(!confirm('Bloquear a este usuario?'))return;
+  await addDoc(collection(db,'blocks'),{by:S.cu.uid,uid,createdAt:serverTimestamp()});
+  const sn=await getDocs(collection(db,'friendships'));
+  for(const d of sn.docs){const f=d.data();if((f.from===S.cu.uid&&f.to===uid)||(f.from===uid&&f.to===S.cu.uid))await deleteDoc(doc(db,'friendships',d.id));}
+  await loadBlocked();await loadFriends();render();
+}
+async function unblockUser(uid){
+  const sn=await getDocs(collection(db,'blocks'));
+  for(const d of sn.docs){const b=d.data();if(b.by===S.cu.uid&&b.uid===uid)await deleteDoc(doc(db,'blocks',d.id));}
+  await loadBlocked();render();
+}
+const isBlocked=uid=>S.blocked.includes(uid);
+const isBlockedBy=uid=>S.blockedBy.includes(uid);
+// FEED ALGORITHM
+function scorePost(post){
+  let score=0;
+  const now=Date.now();
+  const age=post.createdAt?now-(post.createdAt.toDate?post.createdAt.toDate():new Date(post.createdAt)).getTime():now;
+  const ageHours=age/3600000;
+
+  // 1. FEATURED posts always go first
+  if(post.featured) score+=10000;
+
+  // 2. Friend boost - posts from friends score higher
+  if(isFriend(post.userId)) score+=500;
+
+  // 3. Page boost - pages you follow
+  if(post.pageId&&S.me&&(S.pageFollowing||[]).includes(post.pageId)) score+=300;
+
+  // 4. Engagement score - likes and comments weighted
+  const likes=(post.likes||[]).length;
+  const comments=(post.comments||[]).length;
+  const reposts=(post.reposts||[]).length;
+  score+=likes*10+comments*15+reposts*8;
+
+  // 5. Recency decay - newer posts score higher, drops off over time
+  // Half-life of 6 hours
+  const recency=Math.pow(0.5,ageHours/6)*200;
+  score+=recency;
+
+  // 6. Own posts always visible but not boosted
+  if(post.userId===S.cu.uid) score+=100;
+
+  return score;
+}
+
+function sortFeed(posts){
+  // Separate featured from normal
+  const featured=posts.filter(p=>p.featured);
+  const normal=posts.filter(p=>!p.featured);
+
+  // Sort each group by score
+  featured.sort((a,b)=>scorePost(b)-scorePost(a));
+  normal.sort((a,b)=>scorePost(b)-scorePost(a));
+
+  // Interleave: show 1 featured every 5 normal posts
+  const result=[];
+  let fi=0;let ni=0;let count=0;
+  while(ni<normal.length||fi<featured.length){
+    if(fi<featured.length&&count%5===0){result.push(featured[fi++]);}
+    else if(ni<normal.length){result.push(normal[ni++]);}
+    else if(fi<featured.length){result.push(featured[fi++]);}
+    count++;
+  }
+  return result;
+}
+
+// TRENDING
+async function loadTrending(){
+  // Count hashtags in last 24h posts
+  const cutoff=new Date(Date.now()-86400000);
+  const trends={};
+  S.posts.forEach(p=>{
+    if(!p.content)return;
+    const postDate=p.createdAt?( p.createdAt.toDate?p.createdAt.toDate():new Date(p.createdAt)):new Date(0);
+    if(postDate<cutoff)return;
+    const tags=p.content.match(/#[a-zA-Z0-9_À-ž]+/g)||[];
+    tags.forEach(t=>{trends[t]=(trends[t]||0)+1;});
+  });
+  return Object.entries(trends).sort((a,b)=>b[1]-a[1]).slice(0,5);
+}
+
+// ADMIN FUNCTIONS
+function isAdmin(){return S.me&&S.me.isAdmin===true;}
+
+async function toggleFeatured(postId,current){
+  await updateDoc(doc(db,'posts',postId),{featured:!current});
+}
+
+// GROUPS & PAGES
+
+async function renderGroups(app){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Feed';bk.onclick=()=>{S.view='feed';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+
+  // Tabs
+  const tabCard=document.createElement('div');tabCard.className='card';
+  const h2=document.createElement('h2');h2.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:14px;';h2.textContent='Grupos y Paginas';tabCard.appendChild(h2);
+  const tabRow=document.createElement('div');tabRow.className='tab-row';
+  const t1=document.createElement('button');t1.className='tab active';t1.textContent='Grupos';
+  const t2=document.createElement('button');t2.className='tab';t2.textContent='Paginas';
+  tabRow.appendChild(t1);tabRow.appendChild(t2);tabCard.appendChild(tabRow);
+
+  const content=document.createElement('div');
+
+  async function showGroups(){
+    t1.className='tab active';t2.className='tab';
+    content.innerHTML='<div class="load">Cargando...</div>';
+    const sn=await getDocs(collection(db,'groups'));
+    const groups=[];sn.forEach(d=>groups.push({id:d.id,...d.data()}));
+    content.innerHTML='';
+    const newBtn=document.createElement('button');newBtn.className='btn';newBtn.style.cssText='width:100%;margin-bottom:14px;';newBtn.textContent='+ Crear grupo';
+    newBtn.onclick=()=>{S.view='newgroup';render();};content.appendChild(newBtn);
+    if(!groups.length){const e=document.createElement('div');e.style.cssText='color:var(--mut);text-align:center;padding:20px;font-size:14px;';e.textContent='No hay grupos aun. Crea el primero!';content.appendChild(e);}
+    groups.forEach(g=>{
+      const isMember=(g.members||[]).includes(S.cu.uid);
+      const isPending=(g.pending||[]).includes(S.cu.uid);
+      const row=document.createElement('div');row.className='group-card';
+      const av=document.createElement('div');av.className='group-avatar';
+      if(g.photo){const img=document.createElement('img');img.src=g.photo;img.style.cssText='width:48px;height:48px;border-radius:12px;object-fit:cover;';av.style.background='none';av.appendChild(img);}
+      else av.innerHTML=g.emoji||'&#127775;';
+      const info=document.createElement('div');info.style.flex='1';
+      const nm=document.createElement('div');nm.className='group-name';nm.textContent=g.name||'Grupo';
+      const mt=document.createElement('div');mt.className='group-meta';mt.textContent=(g.members||[]).length+' miembros';
+      info.appendChild(nm);info.appendChild(mt);
+      const btn=document.createElement('button');
+      if(isMember){btn.className='btn-o';btn.style.cssText='font-size:12px;color:var(--grn);border-color:#4ade8055;';btn.textContent='Miembro';}
+      else if(isPending){btn.className='btn-o';btn.style.cssText='font-size:12px;';btn.textContent='Pendiente';btn.disabled=true;}
+      else{btn.className='btn';btn.style.cssText='font-size:12px;padding:6px 12px;';btn.textContent='Unirse';}
+      btn.onclick=async e=>{e.stopPropagation();if(!isMember&&!isPending){await updateDoc(doc(db,'groups',g.id),{pending:arrayUnion(S.cu.uid)});await addNotif(g.adminId,'gjoin',g.id,g.id);btn.textContent='Pendiente';btn.disabled=true;}};
+      row.appendChild(av);row.appendChild(info);row.appendChild(btn);
+      row.onclick=()=>{S.groupId=g.id;S.view='group';render();};
+      content.appendChild(row);
+    });
+  }
+
+  async function showPages(){
+    t1.className='tab';t2.className='tab active';
+    content.innerHTML='<div class="load">Cargando...</div>';
+    const sn=await getDocs(collection(db,'pages'));
+    const pages=[];sn.forEach(d=>pages.push({id:d.id,...d.data()}));
+    content.innerHTML='';
+    const newBtn=document.createElement('button');newBtn.className='btn';newBtn.style.cssText='width:100%;margin-bottom:14px;';newBtn.textContent='+ Crear pagina';
+    newBtn.onclick=()=>{S.view='newpage';render();};content.appendChild(newBtn);
+    if(!pages.length){const e=document.createElement('div');e.style.cssText='color:var(--mut);text-align:center;padding:20px;font-size:14px;';e.textContent='No hay paginas aun. Crea la primera!';content.appendChild(e);}
+    pages.forEach(p=>{
+      const isFollowing=(p.followers||[]).includes(S.cu.uid);
+      const row=document.createElement('div');row.className='group-card';
+      const av=document.createElement('div');av.className='page-avatar';av.innerHTML=p.emoji||'&#127381;';
+      const info=document.createElement('div');info.style.flex='1';
+      const nm=document.createElement('div');nm.className='group-name';nm.textContent=p.name||'Pagina';
+      const mt=document.createElement('div');mt.className='group-meta';mt.textContent=(p.followers||[]).length+' seguidores';
+      info.appendChild(nm);info.appendChild(mt);
+      const btn=document.createElement('button');
+      if(isFollowing){btn.className='btn-o';btn.style.cssText='font-size:12px;color:var(--grn);border-color:#4ade8055;';btn.textContent='Siguiendo';}
+      else{btn.className='btn';btn.style.cssText='font-size:12px;padding:6px 12px;';btn.textContent='Seguir';}
+      btn.onclick=async e=>{
+        e.stopPropagation();
+        if(isFollowing){await updateDoc(doc(db,'pages',p.id),{followers:arrayRemove(S.cu.uid)});btn.textContent='Seguir';btn.className='btn';btn.style.cssText='font-size:12px;padding:6px 12px;';}
+        else{await updateDoc(doc(db,'pages',p.id),{followers:arrayUnion(S.cu.uid)});await addNotif(p.adminId,'pfollowed',p.id,null);btn.textContent='Siguiendo';btn.className='btn-o';btn.style.cssText='font-size:12px;color:var(--grn);border-color:#4ade8055;';}
+      };
+      row.appendChild(av);row.appendChild(info);row.appendChild(btn);
+      row.onclick=()=>{S.pageId=p.id;S.view='page';render();};
+      content.appendChild(row);
+    });
+  }
+
+  t1.onclick=()=>showGroups();
+  t2.onclick=()=>showPages();
+  tabCard.appendChild(content);main.appendChild(tabCard);wrap.appendChild(main);
+  app.innerHTML='';app.appendChild(wrap);
+  showGroups();
+}
+
+async function renderGroup(app){
+  const sn=await getDoc(doc(db,'groups',S.groupId));
+  if(!sn.exists()){app.innerHTML='<div class="empty">Grupo no encontrado.</div>';return;}
+  const g={id:sn.id,...sn.data()};
+  const isAdmin=g.adminId===S.cu.uid;
+  const isMember=(g.members||[]).includes(S.cu.uid);
+  const isPending=(g.pending||[]).includes(S.cu.uid);
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Grupos';bk.onclick=()=>{S.view='groups';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const hCard=document.createElement('div');hCard.className='card';
+  const hRow=document.createElement('div');hRow.style.cssText='display:flex;gap:14px;align-items:flex-start;';
+  const av=document.createElement('div');av.className='group-avatar';av.style.cssText='width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;';av.innerHTML=g.emoji||'&#127775;';
+  const info=document.createElement('div');info.style.flex='1';
+  const nm=document.createElement('h2');nm.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:4px;';nm.textContent=g.name||'Grupo';
+  const desc=document.createElement('p');desc.style.cssText='font-size:14px;color:var(--mut);margin-bottom:8px;';desc.textContent=g.desc||'';
+  const stats=document.createElement('div');stats.style.cssText='display:flex;gap:14px;';
+  const ms=document.createElement('span');ms.style.cssText='font-size:13px;';ms.innerHTML='<b>'+(g.members||[]).length+'</b> <span style="color:var(--mut)">miembros</span>';
+  stats.appendChild(ms);info.appendChild(nm);info.appendChild(desc);info.appendChild(stats);
+  hRow.appendChild(av);hRow.appendChild(info);
+  if(!isAdmin){
+    const joinBtn=document.createElement('button');
+    if(isMember){joinBtn.className='btn-o';joinBtn.style.cssText='color:var(--grn);border-color:#4ade8055;font-size:13px;';joinBtn.textContent='Miembro';joinBtn.disabled=true;}
+    else if(isPending){joinBtn.className='btn-o';joinBtn.style.cssText='font-size:13px;';joinBtn.textContent='Pendiente';joinBtn.disabled=true;}
+    else{joinBtn.className='btn';joinBtn.style.cssText='font-size:13px;padding:8px 14px;';joinBtn.textContent='Solicitar union';joinBtn.onclick=async()=>{await updateDoc(doc(db,'groups',g.id),{pending:arrayUnion(S.cu.uid)});await addNotif(g.adminId,'gjoin',g.id,g.id);joinBtn.textContent='Pendiente';joinBtn.disabled=true;};}
+    hRow.appendChild(joinBtn);
+  }
+  hCard.appendChild(hRow);
+  // Admin panel for pending requests
+  if(isAdmin&&(g.pending||[]).length>0){
+    const pendCard=document.createElement('div');pendCard.style.cssText='margin-top:14px;border-top:1px solid var(--bor);padding-top:14px;';
+    const pl=document.createElement('div');pl.className='sl';pl.textContent='Solicitudes pendientes ('+g.pending.length+')';pendCard.appendChild(pl);
+    for(const uid of g.pending){
+      const pu=await loadU(uid);if(!pu)continue;
+      const pr=document.createElement('div');pr.className='member-row';
+      pr.appendChild(avEl(pu,36));
+      const pn=document.createElement('div');pn.style.flex='1';pn.innerHTML='<div style="font-weight:800;font-size:13px;font-family:Nunito,sans-serif">'+esc(pu.name)+'</div><div style="font-size:11px;color:var(--mut)">'+esc(pu.handle||'')+'</div>';
+      const abtn=document.createElement('button');abtn.className='btn';abtn.style.cssText='font-size:12px;padding:5px 10px;margin-right:6px;';abtn.textContent='Aceptar';
+      abtn.onclick=async()=>{await updateDoc(doc(db,'groups',g.id),{members:arrayUnion(uid),pending:arrayRemove(uid)});await addNotif(uid,'gjoined',g.id,null);renderGroup(app);};
+      const rbtn=document.createElement('button');rbtn.className='btn-o';rbtn.style.cssText='font-size:12px;padding:5px 10px;color:var(--red);border-color:#ff4d6d44;';rbtn.textContent='Rechazar';
+      rbtn.onclick=async()=>{await updateDoc(doc(db,'groups',g.id),{pending:arrayRemove(uid)});renderGroup(app);};
+      pr.appendChild(pn);pr.appendChild(abtn);pr.appendChild(rbtn);pendCard.appendChild(pr);
+    }
+    hCard.appendChild(pendCard);
+  }
+  if(isAdmin){
+    const dg=document.createElement('div');dg.className='card';dg.style.cssText='border-color:#ff4d6d33;background:#ff4d6d08;margin-top:0;';
+    const dgb=document.createElement('button');dgb.style.cssText='width:100%;background:transparent;border:1px solid #ff4d6d66;color:var(--red);border-radius:9px;padding:9px;cursor:pointer;font-weight:800;font-size:14px;font-family:Nunito,sans-serif;';dgb.textContent='Eliminar grupo';
+    dgb.onclick=async()=>{
+      if(!confirm('Eliminar este grupo?'))return;
+      const ps=await getDocs(collection(db,'posts'));
+      for(const d of ps.docs){if(d.data().groupId===S.groupId)await deleteDoc(doc(db,'posts',d.id));}
+      await deleteDoc(doc(db,'groups',S.groupId));S.view='groups';render();
+    };dg.appendChild(dgb);main.appendChild(hCard);main.appendChild(dg);
+  } else main.appendChild(hCard);
+  if(!isMember&&!isAdmin){
+    const lock=document.createElement('div');lock.className='lock-msg';lock.innerHTML='&#128274; Este grupo es cerrado. Solicita unirte para ver las publicaciones.';main.appendChild(lock);
+  } else {
+    // Group posts
+    const gposts=S.posts.filter(p=>p.groupId===S.groupId);
+    if(isMember||isAdmin){
+      const compCard=renderGroupComposer(g);main.appendChild(compCard);
+    }
+    if(!gposts.length){const e=document.createElement('div');e.className='empty';e.textContent='Sin publicaciones en este grupo aun.';main.appendChild(e);}
+    else gposts.forEach(p=>main.appendChild(renderPost(p)));
+  }
+  wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+
+function renderGroupComposer(g){
+  const card=document.createElement('div');card.className='card';
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;margin-bottom:10px;';
+  const avMini=document.createElement('div');avMini.style.cssText='width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';avMini.innerHTML=g.emoji||'&#127775;';
+  const ta=document.createElement('textarea');ta.placeholder='Escribe algo en el grupo...';ta.rows=3;ta.value=S.np;ta.oninput=e=>S.np=e.target.value;
+  row.appendChild(avMini);row.appendChild(ta);card.appendChild(row);
+  // Image preview
+  const prev=document.createElement('div');
+  if(S.ni2){
+    prev.style.cssText='position:relative;margin-bottom:10px;';
+    const img=document.createElement('img');img.src=S.ni2;img.style.cssText='width:100%;border-radius:10px;max-height:240px;object-fit:cover;display:block;';
+    const rm=document.createElement('button');rm.style.cssText='position:absolute;top:7px;right:7px;background:#000b;color:#fff;border:none;border-radius:50%;width:25px;height:25px;cursor:pointer;font-size:12px;';rm.textContent='X';
+    rm.onclick=()=>{S.ni2='';renderGroup(document.getElementById('app'));};prev.appendChild(img);prev.appendChild(rm);
+  }
+  card.appendChild(prev);
+  const fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.style.display='none';
+  fi.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const reader=new FileReader();reader.onload=ev=>{
+      const imgEl=new Image();imgEl.onload=()=>{
+        const canvas=document.createElement('canvas');const mw=800;const r=Math.min(1,mw/imgEl.width);
+        canvas.width=imgEl.width*r;canvas.height=imgEl.height*r;
+        canvas.getContext('2d').drawImage(imgEl,0,0,canvas.width,canvas.height);
+        S.ni2=canvas.toDataURL('image/jpeg',0.7);renderGroup(document.getElementById('app'));
+      };imgEl.src=ev.target.result;
+    };reader.readAsDataURL(f);
+  };
+  card.appendChild(fi);
+  const act=document.createElement('div');act.style.cssText='display:flex;justify-content:space-between;align-items:center;';
+  const imgBtn=document.createElement('button');imgBtn.className='btn-o';imgBtn.innerHTML='&#128247; Imagen';imgBtn.onclick=()=>fi.click();
+  const pb=document.createElement('button');pb.className='btn';pb.style.cssText='padding:8px 16px;font-size:13px;';pb.textContent='Publicar';
+  pb.onclick=async()=>{
+    if(!S.np.trim()&&!S.ni2)return;pb.disabled=true;pb.innerHTML='<span class="spin"></span>Publicando...';
+    await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:S.ni2?'image':'status',content:S.np,image:S.ni2||null,privacy:'group',groupId:g.id,groupName:g.name,createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});
+    S.np='';S.ni2='';renderGroup(document.getElementById('app'));
+  };
+  act.appendChild(imgBtn);act.appendChild(pb);card.appendChild(act);return card;
+}
+
+async function renderPage(app){
+  const sn=await getDoc(doc(db,'pages',S.pageId));
+  if(!sn.exists()){app.innerHTML='<div class="empty">Pagina no encontrada.</div>';return;}
+  const pg={id:sn.id,...sn.data()};
+  if(!S.pageCache)S.pageCache={};
+  S.pageCache[pg.id]=pg;
+  const isAdmin=pg.adminId===S.cu.uid;
+  const isFollowing=(pg.followers||[]).includes(S.cu.uid);
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Paginas';bk.onclick=()=>{S.view='groups';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+
+  // Header card with cover-style design
+  const hCard=document.createElement('div');hCard.className='card';hCard.style.padding='0';hCard.style.overflow='hidden';
+
+  // Cover area
+  const cover=document.createElement('div');
+  cover.style.cssText='height:90px;background:linear-gradient(135deg,#9b35e8,#ff6b9d);position:relative;';
+
+  // Page photo/avatar
+  const avWrap=document.createElement('div');avWrap.style.cssText='position:absolute;bottom:-28px;left:16px;';
+  if(pg.photo){
+    const img=document.createElement('img');img.src=pg.photo;img.style.cssText='width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--card);';avWrap.appendChild(img);
+  } else {
+    const avD=document.createElement('div');avD.style.cssText='width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#ff4d6d);display:flex;align-items:center;justify-content:center;font-size:28px;border:3px solid var(--card);';avD.innerHTML=pg.emoji||'&#127381;';avWrap.appendChild(avD);
+  }
+  if(isAdmin){
+    // Photo upload for page
+    const pfi=document.createElement('input');pfi.type='file';pfi.accept='image/*';pfi.style.display='none';
+    pfi.onchange=async e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();reader.onload=async ev=>{
+        const imgEl=new Image();imgEl.onload=async()=>{
+          const canvas=document.createElement('canvas');const sz=200;canvas.width=sz;canvas.height=sz;
+          const ctx=canvas.getContext('2d');const mn=Math.min(imgEl.width,imgEl.height);
+          const sx=(imgEl.width-mn)/2;const sy=(imgEl.height-mn)/2;
+          ctx.drawImage(imgEl,sx,sy,mn,mn,0,0,sz,sz);
+          const photo=canvas.toDataURL('image/jpeg',0.8);
+          await updateDoc(doc(db,'pages',pg.id),{photo});
+          renderPage(app);
+        };imgEl.src=ev.target.result;
+      };reader.readAsDataURL(file);
+    };
+    avWrap.appendChild(pfi);
+    const editOv=document.createElement('div');editOv.style.cssText='position:absolute;inset:0;border-radius:50%;background:#00000066;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;';editOv.innerHTML='&#128247;';editOv.onclick=()=>pfi.click();
+    avWrap.appendChild(editOv);
+  }
+  cover.appendChild(avWrap);hCard.appendChild(cover);
+
+  // Info section
+  const infoSec=document.createElement('div');infoSec.style.cssText='padding:40px 16px 16px;';
+  const nm=document.createElement('h2');nm.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:20px;margin-bottom:4px;';nm.textContent=pg.name||'Pagina';
+  const desc=document.createElement('p');desc.style.cssText='font-size:14px;color:var(--mut);margin-bottom:10px;line-height:1.5;';desc.textContent=pg.desc||'';
+  const statsRow=document.createElement('div');statsRow.style.cssText='display:flex;gap:16px;align-items:center;';
+  const fCount=document.createElement('span');fCount.style.cssText='font-size:14px;';fCount.innerHTML='<b>'+(pg.followers||[]).length+'</b> <span style="color:var(--mut)">seguidores</span>';
+  statsRow.appendChild(fCount);
+  if(!isAdmin){
+    const fb=document.createElement('button');
+    if(isFollowing){fb.className='btn-o';fb.style.cssText='color:var(--grn);border-color:#4ade8055;font-size:13px;padding:7px 14px;';fb.textContent='Siguiendo';fb.onclick=async()=>{await updateDoc(doc(db,'pages',pg.id),{followers:arrayRemove(S.cu.uid)});renderPage(app);};}
+    else{fb.className='btn';fb.style.cssText='font-size:13px;padding:7px 16px;';fb.textContent='+ Seguir';fb.onclick=async()=>{await updateDoc(doc(db,'pages',pg.id),{followers:arrayUnion(S.cu.uid)});await addNotif(pg.adminId,'pfollowed',pg.id,null);renderPage(app);};}
+    statsRow.appendChild(fb);
+  }
+  infoSec.appendChild(nm);infoSec.appendChild(desc);infoSec.appendChild(statsRow);
+  hCard.appendChild(infoSec);main.appendChild(hCard);
+
+  if(isAdmin){
+    main.appendChild(renderPageComposer(pg));
+    const dp=document.createElement('div');dp.className='card';dp.style.cssText='border-color:#ff4d6d33;background:#ff4d6d08;';
+    const dpb=document.createElement('button');dpb.style.cssText='width:100%;background:transparent;border:1px solid #ff4d6d66;color:var(--red);border-radius:9px;padding:9px;cursor:pointer;font-weight:800;font-size:14px;font-family:Nunito,sans-serif;';dpb.textContent='Eliminar pagina';
+    dpb.onclick=async()=>{
+      if(!confirm('Eliminar esta pagina?'))return;
+      const ps=await getDocs(collection(db,'posts'));
+      for(const d of ps.docs){if(d.data().pageId===S.pageId)await deleteDoc(doc(db,'posts',d.id));}
+      await deleteDoc(doc(db,'pages',S.pageId));S.view='groups';render();
+    };dp.appendChild(dpb);main.appendChild(dp);
+  }
+
+  // Load page posts from Firestore directly
+  try{
+    const psn=await getDocs(query(collection(db,'posts'),orderBy('createdAt','desc')));
+    let found=false;
+    psn.forEach(d=>{
+      const p={id:d.id,...d.data()};
+      if(p.pageId===S.pageId){found=true;main.appendChild(renderPost(p));}
+    });
+    if(!found){const e=document.createElement('div');e.className='empty';e.textContent='Sin publicaciones en esta pagina aun.';main.appendChild(e);}
+  }catch(e){console.log(e);}
+
+  wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+
+function renderPageComposer(pg){
+  const card=document.createElement('div');card.className='card';
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:10px;margin-bottom:10px;';
+  // Page avatar mini
+  const avMini=document.createElement('div');avMini.style.cssText='width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#ff4d6d);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;';
+  if(pg.photo){const img=document.createElement('img');img.src=pg.photo;img.style.cssText='width:36px;height:36px;border-radius:50%;object-fit:cover;';avMini.innerHTML='';avMini.appendChild(img);}
+  else avMini.innerHTML=pg.emoji||'&#127381;';
+  const ta=document.createElement('textarea');ta.placeholder='Publica como '+esc(pg.name)+'...';ta.rows=3;ta.value=S.np;ta.oninput=e=>S.np=e.target.value;
+  row.appendChild(avMini);row.appendChild(ta);card.appendChild(row);
+  // Image preview
+  const prev=document.createElement('div');
+  if(S.ni2){
+    prev.style.cssText='position:relative;margin-bottom:10px;';
+    const img=document.createElement('img');img.src=S.ni2;img.style.cssText='width:100%;border-radius:10px;max-height:240px;object-fit:cover;display:block;';
+    const rm=document.createElement('button');rm.style.cssText='position:absolute;top:7px;right:7px;background:#000b;color:#fff;border:none;border-radius:50%;width:25px;height:25px;cursor:pointer;font-size:12px;';rm.textContent='X';
+    rm.onclick=()=>{S.ni2='';renderPage(document.getElementById('app'));};prev.appendChild(img);prev.appendChild(rm);
+  }
+  card.appendChild(prev);
+  const fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.style.display='none';
+  fi.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const reader=new FileReader();reader.onload=ev=>{
+      const imgEl=new Image();imgEl.onload=()=>{
+        const canvas=document.createElement('canvas');const mw=800;const r=Math.min(1,mw/imgEl.width);
+        canvas.width=imgEl.width*r;canvas.height=imgEl.height*r;
+        canvas.getContext('2d').drawImage(imgEl,0,0,canvas.width,canvas.height);
+        S.ni2=canvas.toDataURL('image/jpeg',0.7);renderPage(document.getElementById('app'));
+      };imgEl.src=ev.target.result;
+    };reader.readAsDataURL(f);
+  };
+  card.appendChild(fi);
+  const act=document.createElement('div');act.style.cssText='display:flex;justify-content:space-between;align-items:center;';
+  const imgBtn=document.createElement('button');imgBtn.className='btn-o';imgBtn.innerHTML='&#128247; Imagen';imgBtn.onclick=()=>fi.click();
+  const pb=document.createElement('button');pb.className='btn';pb.style.cssText='padding:8px 16px;font-size:13px;';pb.textContent='Publicar';
+  pb.onclick=async()=>{
+    if(!S.np.trim()&&!S.ni2)return;pb.disabled=true;pb.innerHTML='<span class="spin"></span>Publicando...';
+    await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:S.ni2?'image':'status',content:S.np,image:S.ni2||null,privacy:'public',pageId:pg.id,pageName:pg.name,createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});
+    S.np='';S.ni2='';renderPage(document.getElementById('app'));
+  };
+  act.appendChild(imgBtn);act.appendChild(pb);card.appendChild(act);return card;
+}
+
+async function renderNewGroup(app){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='Cancelar';bk.onclick=()=>{S.view='groups';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const card=document.createElement('div');card.className='card';card.style.maxWidth='420px';card.style.margin='0 auto';
+  const h2=document.createElement('h2');h2.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:16px;';h2.textContent='Crear grupo';card.appendChild(h2);
+  const form=document.createElement('div');form.style.cssText='display:flex;flex-direction:column;gap:11px;';
+
+  // Name
+  const nD=document.createElement('div');const nL=document.createElement('div');nL.className='fl';nL.textContent='Nombre del grupo';
+  const nI=document.createElement('input');nI.placeholder='Ej: Fotografia urbana';nI.oninput=e=>S.gf.name=e.target.value;
+  nD.appendChild(nL);nD.appendChild(nI);form.appendChild(nD);
+
+  // Desc
+  const dD=document.createElement('div');const dL=document.createElement('div');dL.className='fl';dL.textContent='Descripcion';
+  const dI=document.createElement('input');dI.placeholder='De que trata el grupo...';dI.oninput=e=>S.gf.desc=e.target.value;
+  dD.appendChild(dL);dD.appendChild(dI);form.appendChild(dD);
+
+  // Emoji picker
+  const eD=document.createElement('div');const eL=document.createElement('div');eL.className='fl';eL.textContent='Emoji del grupo';
+  const emojis=['⭐','🌙','🔭','🌺','🚀','🌊','🦋','🎸','🔬','🌸','⚡','🎯','🦊','🐬','🌴','🎨','🏋️','🎮','🍕','🐕','🏖️','📸','🎭','🤖','🌍'];
+  const epick=document.createElement('div');epick.style.cssText='display:flex;gap:6px;flex-wrap:wrap;';
+  let selEmoji='⭐';
+  emojis.forEach(em=>{
+    const b=document.createElement('button');b.style.cssText='font-size:22px;background:transparent;border:2px solid var(--bor);border-radius:8px;padding:3px 6px;cursor:pointer;transition:all .15s;';b.textContent=em;
+    b.onclick=()=>{selEmoji=em;S.gf.emoji=em;epick.querySelectorAll('button').forEach(x=>x.style.borderColor='var(--bor)');b.style.borderColor='var(--acc)';b.style.background='#9b35e820';};
+    epick.appendChild(b);
+  });
+  eD.appendChild(eL);eD.appendChild(epick);form.appendChild(eD);
+
+  // Group photo
+  const phD=document.createElement('div');const phL=document.createElement('div');phL.className='fl';phL.textContent='Foto del grupo (opcional)';
+  const phPrev=document.createElement('div');phPrev.id='gprev';
+  const phFi=document.createElement('input');phFi.type='file';phFi.accept='image/*';phFi.style.display='none';
+  phFi.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const reader=new FileReader();reader.onload=ev=>{
+      const imgEl=new Image();imgEl.onload=()=>{
+        const canvas=document.createElement('canvas');const sz=300;canvas.width=sz;canvas.height=sz;
+        const ctx=canvas.getContext('2d');const mn=Math.min(imgEl.width,imgEl.height);
+        const sx=(imgEl.width-mn)/2;const sy=(imgEl.height-mn)/2;
+        ctx.drawImage(imgEl,sx,sy,mn,mn,0,0,sz,sz);
+        S.gf.photo=canvas.toDataURL('image/jpeg',0.8);
+        phPrev.innerHTML='';const img=document.createElement('img');img.src=S.gf.photo;img.style.cssText='width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--acc);';phPrev.appendChild(img);
+      };imgEl.src=ev.target.result;
+    };reader.readAsDataURL(f);
+  };
+  const phBtn=document.createElement('button');phBtn.className='btn-o';phBtn.innerHTML='&#128247; Subir foto';phBtn.onclick=()=>phFi.click();
+  phD.appendChild(phL);phD.appendChild(phPrev);phD.appendChild(phBtn);phD.appendChild(phFi);form.appendChild(phD);
+
+  const errD=document.createElement('div');errD.className='err';errD.style.display='none';
+  const btn=document.createElement('button');btn.className='btn';btn.style.width='100%';btn.textContent='Crear grupo';
+  btn.onclick=async()=>{
+    if(!S.gf.name.trim()){errD.textContent='El grupo necesita un nombre.';errD.style.display='';return;}
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span>Creando...';
+    await addDoc(collection(db,'groups'),{name:S.gf.name,desc:S.gf.desc||'',emoji:selEmoji,photo:S.gf.photo||'',adminId:S.cu.uid,members:[S.cu.uid],pending:[],createdAt:serverTimestamp()});
+    S.gf={name:'',desc:'',emoji:'',photo:''};S.view='groups';render();
+  };
+  form.appendChild(errD);form.appendChild(btn);card.appendChild(form);main.appendChild(card);wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+
+async function renderNewPage(app){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='Cancelar';bk.onclick=()=>{S.view='pages';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const card=document.createElement('div');card.className='card';card.style.maxWidth='420px';card.style.margin='0 auto';
+  const h2=document.createElement('h2');h2.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:16px;';h2.textContent='Crear pagina';card.appendChild(h2);
+  const form=document.createElement('div');form.style.cssText='display:flex;flex-direction:column;gap:11px;';
+  function fld3(lbl,ph,key){const d=document.createElement('div');const l=document.createElement('div');l.className='fl';l.textContent=lbl;const i=document.createElement('input');i.placeholder=ph;i.value=S.pf[key]||'';i.oninput=e=>S.pf[key]=e.target.value;d.appendChild(l);d.appendChild(i);return d;}
+  form.appendChild(fld3('Nombre de la pagina','Ej: Con F de Fisica','name'));
+  form.appendChild(fld3('Descripcion','De que trata tu pagina...','desc'));
+  form.appendChild(fld3('Emoji de la pagina','&#127381;','emoji'));
+  const errD2=document.createElement('div');errD2.className='err';errD2.style.display='none';
+  const btn2=document.createElement('button');btn2.className='btn';btn2.style.width='100%';btn2.textContent='Crear pagina';
+  btn2.onclick=async()=>{
+    if(!S.pf.name.trim()){errD2.textContent='La pagina necesita un nombre.';errD2.style.display='';return;}
+    btn2.disabled=true;btn2.innerHTML='<span class="spin"></span>Creando...';
+    await addDoc(collection(db,'pages'),{name:S.pf.name,desc:S.pf.desc||'',emoji:S.pf.emoji||'&#127381;',adminId:S.cu.uid,followers:[],createdAt:serverTimestamp()});
+    S.pf={name:'',desc:'',emoji:'&#127381;'};S.view='pages';render();
+  };
+  
+  form.appendChild(errD2);form.appendChild(btn2);card.appendChild(form);main.appendChild(card);wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+
+// SEARCH
+async function renderSearch(app){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Feed';bk.onclick=()=>{S.view='feed';render();};
+  nr.appendChild(bk);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const card=document.createElement('div');card.className='card';
+  const h2=document.createElement('h2');h2.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:14px;';h2.textContent='Buscar personas';card.appendChild(h2);
+  const inp=document.createElement('input');inp.placeholder='Busca por nombre o @usuario...';inp.style.marginBottom='14px';
+  const results=document.createElement('div');results.id='search-results';
+  const allUsers=[];
+  try{
+    const sn=await getDocs(collection(db,'users'));
+    sn.forEach(d=>{if(d.id!==S.cu.uid)allUsers.push({id:d.id,...d.data()});});
+  }catch(e){}
+  function doSearch(q){
+    results.innerHTML='';
+    if(!q.trim()){results.innerHTML='<div style="color:var(--mut);font-size:14px;text-align:center;padding:20px 0;">Escribe para buscar</div>';return;}
+    const ql=q.toLowerCase();
+    const found=allUsers.filter(u=>(u.name||'').toLowerCase().includes(ql)||(u.handle||'').toLowerCase().includes(ql));
+    if(!found.length){results.innerHTML='<div style="color:var(--mut);font-size:14px;text-align:center;padding:20px 0;">Sin resultados</div>';return;}
+    found.forEach(u=>{
+      const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bor);cursor:pointer;';
+      row.appendChild(avEl(u,44));
+      const info=document.createElement('div');info.style.flex='1';
+      const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:14px;font-family:Nunito,sans-serif;';nm.textContent=u.name||'';
+      const hn=document.createElement('div');hn.style.cssText='font-size:12px;color:var(--mut);';hn.textContent=u.handle||'';
+      info.appendChild(nm);info.appendChild(hn);row.appendChild(info);
+      const isF=isFriend(u.id);
+      const ftag=document.createElement('span');
+      if(isF){ftag.className='tag tag-pub';ftag.textContent='Amigo';}
+      row.appendChild(ftag);
+      row.onclick=()=>{S.pid=u.id;S.view='profile';render();};
+      results.appendChild(row);
+    });
+  }
+  inp.oninput=e=>doSearch(e.target.value);
+  doSearch('');
+  card.appendChild(inp);card.appendChild(results);
+  main.appendChild(card);wrap.appendChild(main);
+  app.innerHTML='';app.appendChild(wrap);
+}
+
+// AUTH
+onAuthStateChanged(auth,async u=>{
+  if(u){
+    S.cu=u;
+    const p=await loadU(u.uid);
+    S.me=p;if(p)S.users[u.uid]=p;
+    await loadFriends();
+    await loadBlocked();
+    S.view='feed';
+    listenNotifs(u.uid);
+  } else {
+    S.cu=null;S.me=null;S.view='login';
+    if(unsubN)unsubN();
+  }
+  render();
+});
+
+function render(){
+  const app=document.getElementById('app');app.innerHTML='';
+  if(!S.cu){app.appendChild(S.view==='register'?renderReg():renderLogin());}
+  else if(S.view==='profile'){renderProf(app);}
+  else if(S.view==='messages'){renderMessages(app);}
+  else if(S.view==='chat'){renderChat(app);}
+  else if(S.view==='search'){renderSearch(app);}
+  else if(S.view==='groups'){renderGroups(app);}
+  else if(S.view==='group'){renderGroup(app);}
+  else if(S.view==='pages'){S.view='groups';render();}
+  else if(S.view==='page'){renderPage(app);}
+  else if(S.view==='newgroup'){renderNewGroup(app);}
+  else if(S.view==='newpage'){renderNewPage(app);}
+  else{app.appendChild(renderFeed());}
+}
+
+// LOGIN
+function renderLogin(){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const rb=document.createElement('button');rb.className='nbtn';rb.textContent='Registrarse';
+  rb.onclick=()=>{S.view='register';render();};
+  nr.appendChild(rb);wrap.appendChild(makeNav(nr));
+
+  const main=document.createElement('div');main.className='main';
+  const card=document.createElement('div');card.className='card';card.style.maxWidth='400px';card.style.margin='28px auto';
+
+  const authLogo=document.createElement('div');authLogo.style.cssText='text-align:center;margin-bottom:16px;font-size:1.6em';authLogo.innerHTML=logoHTML();card.appendChild(authLogo);
+
+  const h2=document.createElement('h2');h2.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:4px;text-align:center';h2.textContent='Bienvenido de nuevo';card.appendChild(h2);
+  const sub=document.createElement('p');sub.style.cssText='color:var(--mut);margin-bottom:16px;font-size:13px;text-align:center';sub.textContent='Inicia sesion para continuar';card.appendChild(sub);
+
+  // Email
+  const eWrap=document.createElement('div');eWrap.style.marginBottom='10px';
+  const eL=document.createElement('div');eL.className='fl';eL.textContent='Correo';
+  const eI=document.createElement('input');eI.type='email';eI.id='login-email';eI.placeholder='tu@email.com';eI.autocomplete='email';
+  eWrap.appendChild(eL);eWrap.appendChild(eI);card.appendChild(eWrap);
+
+  // Password
+  const pWrap=document.createElement('div');pWrap.style.marginBottom='4px';
+  const pL=document.createElement('div');pL.className='fl';pL.textContent='Contrasena';
+  const pI=document.createElement('input');pI.type='password';pI.id='login-pass';pI.placeholder='........';pI.autocomplete='current-password';
+  pWrap.appendChild(pL);pWrap.appendChild(pI);card.appendChild(pWrap);
+
+  // Forgot password
+  const forgotP=document.createElement('p');forgotP.style.cssText='font-size:13px;text-align:right;margin-bottom:10px;';
+  const forgotLnk=document.createElement('span');forgotLnk.className='lnk';forgotLnk.textContent='Olvide mi contrasena';
+  forgotLnk.onclick=async()=>{
+    const email=document.getElementById('login-email').value;
+    if(!email){showLoginErr('Escribe tu correo primero.');return;}
+    try{
+      await sendPasswordResetEmail(auth,email);
+      showLoginOk('Correo enviado! Revisa tu bandeja de entrada y spam.');
+    }catch(e){showLoginErr('No encontramos ese correo.');}
+  };
+  forgotP.appendChild(forgotLnk);card.appendChild(forgotP);
+
+  // Error / success messages
+  const errD=document.createElement('div');errD.id='login-err';errD.className='err';errD.style.display='none';errD.style.marginBottom='10px';card.appendChild(errD);
+  const okD=document.createElement('div');okD.id='login-ok';okD.style.cssText='background:#4ade8018;border:1px solid #4ade8033;border-radius:8px;padding:8px 12px;font-size:13px;color:#4ade80;font-weight:700;margin-bottom:10px;display:none;';card.appendChild(okD);
+
+  if(S.le){errD.textContent=S.le;errD.style.display='';}
+
+  // Login button
+  const loginBtn=document.createElement('button');loginBtn.className='btn';loginBtn.style.cssText='width:100%;margin-bottom:10px;';loginBtn.textContent='Iniciar sesion';
+  loginBtn.onclick=doLogin;
+  card.appendChild(loginBtn);
+
+  // Enter key
+  pI.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  eI.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('login-pass').focus();});
+
+  const switchP=document.createElement('p');switchP.style.cssText='font-size:13px;text-align:center;color:var(--mut)';
+  const swLnk=document.createElement('span');swLnk.className='lnk';swLnk.textContent='Registrate aqui';swLnk.onclick=()=>{S.view='register';render();};
+  switchP.appendChild(document.createTextNode('Sin cuenta? '));switchP.appendChild(swLnk);
+  card.appendChild(switchP);
+
+  main.appendChild(card);wrap.appendChild(main);
+  return wrap;
+}
+
+function showLoginErr(msg){const e=document.getElementById('login-err');if(e){e.textContent=msg;e.style.display='';}}
+function showLoginOk(msg){const o=document.getElementById('login-ok');if(o){o.textContent=msg;o.style.display='';}}
+
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  if(!email||!pass){showLoginErr('Escribe tu correo y contrasena.');return;}
+  const btn=document.querySelector('#login-pass')?.closest('.card')?.querySelector('.btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spin"></span>Entrando...';}
+  try{
+    await signInWithEmailAndPassword(auth,email,pass);
+    S.le='';
+  }catch(e){
+    S.le=e.code==='auth/invalid-credential'?'Correo o contrasena incorrectos.':'Error: '+e.message;
+    render();
+  }
+}
+// REGISTER
+function renderReg(){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const lb=document.createElement('button');lb.className='nbtn';lb.textContent='Iniciar sesion';lb.onclick=()=>{S.view='login';render();};
+  nr.appendChild(lb);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const card=document.createElement('div');card.className='card';card.style.maxWidth='400px';card.style.margin='28px auto';
+  const authLogo=document.createElement('div');authLogo.style.cssText='text-align:center;margin-bottom:14px;font-size:1.6em';authLogo.innerHTML=logoHTML();card.appendChild(authLogo);
+  const h2=document.createElement('h2');h2.style.cssText='font-family:Nunito,sans-serif;font-weight:900;font-size:18px;margin-bottom:4px;text-align:center';h2.textContent='Crear cuenta';card.appendChild(h2);
+  const sub=document.createElement('p');sub.style.cssText='color:var(--mut);margin-bottom:14px;font-size:13px;text-align:center';sub.textContent='Unete a la comunidad Xelfi';card.appendChild(sub);
+  const form=document.createElement('div');form.style.cssText='display:flex;flex-direction:column;gap:10px';
+  function fld(lbl,ph,type,key){
+    const d=document.createElement('div');const l=document.createElement('div');l.className='fl';l.textContent=lbl;
+    const i=document.createElement('input');i.type=type||'text';i.placeholder=ph;i.value=S.rf[key]||'';i.oninput=e=>S.rf[key]=e.target.value;
+    d.appendChild(l);d.appendChild(i);return d;
+  }
+  form.appendChild(fld('Nombre','Tu nombre','text','n'));
+  form.appendChild(fld('@Usuario','@usuario','text','h'));
+  form.appendChild(fld('Correo','tu@email.com','email','e'));
+  form.appendChild(fld('Biografia (opcional)','Cuentanos de ti...','text','b'));
+  const avD=document.createElement('div');const avL=document.createElement('div');avL.className='fl';avL.textContent='Elige tu avatar';
+  const avPick=document.createElement('div');avPick.className='av-pick';avPick.id='avpick';avD.appendChild(avL);avD.appendChild(avPick);
+  form.appendChild(avD);
+  form.appendChild(fld('Contrasena','Minimo 6 caracteres','password','p'));
+  const errD=document.createElement('div');errD.className='err';errD.style.display='none';if(S.re){errD.textContent=S.re;errD.style.display='';}
+  const regBtn=document.createElement('button');regBtn.className='btn';regBtn.style.width='100%';regBtn.textContent='Crear cuenta';regBtn.onclick=doReg;
+  const switchP=document.createElement('p');switchP.style.cssText='font-size:13px;text-align:center;color:var(--mut)';switchP.innerHTML='Ya tienes cuenta? <span class="lnk" id="go-login">Inicia sesion</span>';
+  form.appendChild(errD);form.appendChild(regBtn);form.appendChild(switchP);
+  card.appendChild(form);main.appendChild(card);wrap.appendChild(main);
+  setTimeout(()=>{
+    const ap=document.getElementById('avpick');
+    AVK.forEach(k=>{const b=document.createElement('button');b.className='av-btn'+(S.sav===k?' sel':'');b.innerHTML=em(k);b.onclick=()=>{S.sav=k;S.rf.av=k;ap.querySelectorAll('.av-btn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};ap.appendChild(b);});
+    const gl=document.getElementById('go-login');if(gl)gl.onclick=()=>{S.view='login';render();};
+  },0);
+  return wrap;
+}
+async function doReg(){
+  const f=S.rf;
+  if(!f.n||!f.e||!f.p){S.re='Completa nombre, correo y contrasena.';render();return;}
+  if(f.p.length<6){S.re='La contrasena debe tener al menos 6 caracteres.';render();return;}
+  try{
+    const cred=await createUserWithEmailAndPassword(auth,f.e,f.p);
+    const h=f.h?(f.h.startsWith('@')?f.h:'@'+f.h):'@'+f.n.toLowerCase().replace(/\s/g,'');
+    const profile={name:f.n,handle:h,bio:f.b||'',avatar:S.sav,photo:'',followers:0,following:0,email:f.e,privateProfile:false,createdAt:serverTimestamp()};
+    await setDoc(doc(db,'users',cred.user.uid),profile);
+    S.me=profile;S.users[cred.user.uid]=profile;S.re='';
+  } catch(e){S.re=e.code==='auth/email-already-in-use'?'Ese correo ya esta registrado.':'Error: '+e.message;render();}
+}
+
+// FEED
+let unsubP=null;
+function renderFeed(){
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bw=document.createElement('div');bw.className='bell-w';
+  const bell=document.createElement('button');bell.className='nbtn';bell.innerHTML='&#128276;';bell.style.fontSize='17px';
+  bell.onclick=e=>{e.stopPropagation();const ex=document.getElementById('npanel');if(ex){ex.remove();}else{document.body.appendChild(renderNotifPanel());}};
+  const badge=document.createElement('div');badge.id='nbadge';badge.className='nbadge';
+  if(S.unread>0){badge.textContent=S.unread;badge.style.display='flex';}
+  bw.appendChild(bell);bw.appendChild(badge);
+  // Messages button
+  const mw=document.createElement('div');mw.className='bell-w';
+  const msgBtn=document.createElement('button');msgBtn.className='nbtn';msgBtn.innerHTML='&#128172;';msgBtn.style.fontSize='17px';
+  msgBtn.onclick=()=>{S.view='messages';render();};
+  const mbadge=document.createElement('div');mbadge.id='mbadge';mbadge.className='nbadge';
+  if(S.msgUnread>0){mbadge.textContent=S.msgUnread;mbadge.style.display='flex';}
+  mw.appendChild(msgBtn);mw.appendChild(mbadge);
+  const myBtn=document.createElement('button');myBtn.className='nbtn';
+  myBtn.style.cssText='display:flex;align-items:center;gap:5px;';
+  myBtn.innerHTML=em(S.me&&S.me.avatar)+' <span>'+esc(S.me&&S.me.handle||'')+'</span>';
+  myBtn.onclick=()=>{S.pid=S.cu.uid;S.view='profile';render();};
+  const outBtn=document.createElement('button');outBtn.className='nbtn';outBtn.textContent='Salir';
+  outBtn.onclick=async()=>{if(unsubP)unsubP();if(unsubN)unsubN();await signOut(auth);};
+  const srchBtn=document.createElement('button');srchBtn.className='nbtn';srchBtn.innerHTML='&#128269;';srchBtn.style.fontSize='17px';srchBtn.onclick=()=>{S.view='search';render();};
+  const grpBtn=document.createElement('button');grpBtn.className='nbtn';grpBtn.innerHTML='&#128101;';grpBtn.style.fontSize='17px';grpBtn.onclick=()=>{S.view='groups';render();};
+  nr.appendChild(bw);nr.appendChild(mw);nr.appendChild(srchBtn);nr.appendChild(grpBtn);nr.appendChild(myBtn);nr.appendChild(outBtn);
+  wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  main.appendChild(renderComposer());
+  const pd=document.createElement('div');pd.id='pcon';pd.innerHTML='<div class="load">Cargando...</div>';
+  main.appendChild(pd);wrap.appendChild(main);
+  if(unsubP)unsubP();
+  unsubP=onSnapshot(query(collection(db,'posts'),orderBy('createdAt','desc')),async sn=>{
+    if(S.cu&&S.me)S.users[S.cu.uid]=S.me;
+    const list=[];
+    for(const d of sn.docs){const p={id:d.id,...d.data()};if(!S.users[p.userId])await loadU(p.userId);if(canSee(p)&&!isBlocked(p.userId)&&!isBlockedBy(p.userId))list.push(p);}
+    S.posts=list;
+    const sorted=sortFeed(list);
+    const con=document.getElementById('pcon');if(!con)return;
+    con.innerHTML='';
+    if(!sorted.length){con.innerHTML='<div class="empty">Se el primero en publicar!</div>';}
+    else sorted.forEach(p=>con.appendChild(renderPost(p)));
+  });
+  loadSuggested(main);
+  return wrap;
+}
+
+async function loadSuggested(main){
+  try{
+    const sn=await getDocs(collection(db,'users'));const others=[];
+    sn.forEach(d=>{if(d.id!==S.cu.uid)others.push({id:d.id,...d.data()});});
+    if(!others.length)return;
+    const sc=document.createElement('div');sc.className='card';sc.style.padding='12px 16px';
+    const sl=document.createElement('div');sl.className='sl';sl.textContent='Personas en Xelfi';sc.appendChild(sl);
+    const row=document.createElement('div');row.className='sug-row';
+    others.slice(0,10).forEach(u=>{
+      const s=document.createElement('div');s.className='sug';
+      const avDiv=document.createElement('div');avDiv.style.cssText='font-size:24px;margin-bottom:4px;';
+      if(u.photo||u.photoURL){const img=document.createElement('img');img.src=u.photo||u.photoURL;img.style.cssText='width:40px;height:40px;border-radius:50%;object-fit:cover;';avDiv.appendChild(img);}
+      else{avDiv.innerHTML=em(u.avatar);}
+      const nm=document.createElement('div');nm.style.cssText='font-size:12px;font-weight:800;font-family:Nunito,sans-serif;';nm.textContent=(u.name||'').split(' ')[0];
+      const hn=document.createElement('div');hn.style.cssText='font-size:11px;color:var(--mut);';hn.textContent=u.handle||'';
+      s.appendChild(avDiv);s.appendChild(nm);s.appendChild(hn);
+      s.onclick=()=>{S.pid=u.id;S.view='profile';render();};row.appendChild(s);
+    });
+    sc.appendChild(row);
+    const comp=main.querySelector('.card');main.insertBefore(sc,comp.nextSibling);
+  }catch(e){}
+}
+
+// COMPOSER
+function renderComposer(){
+  const card=document.createElement('div');card.className='card';
+  const row=document.createElement('div');row.className='ph';
+  row.appendChild(avEl(S.me,40));
+  const cWrap=document.createElement('div');cWrap.className='comp-wrap';
+  const ta=document.createElement('textarea');ta.placeholder='Que esta pasando? (usa @ para etiquetar)';ta.rows=3;ta.value=S.np;
+  const mbox=document.createElement('div');mbox.className='comp-mbox';mbox.id='comp-mbox';
+  ta.addEventListener('input',e=>{
+    S.np=e.target.value;
+    const val=e.target.value;const ai=val.lastIndexOf('@');
+    if(ai>=0){
+      const q2=val.slice(ai+1).toLowerCase();
+      const matches=S.friends.map(uid=>S.users[uid]).filter(u=>u&&(u.name.toLowerCase().includes(q2)||(u.handle||'').toLowerCase().includes(q2))).slice(0,5);
+      if(matches.length){
+        mbox.innerHTML='';mbox.style.display='block';
+        matches.forEach(u=>{
+          const opt=document.createElement('div');opt.className='mention-opt';
+          opt.innerHTML=em(u.avatar)+' <b>'+esc(u.name)+'</b> <span style="color:var(--mut);font-size:11px">'+esc(u.handle)+'</span>';
+          opt.onmousedown=ev=>{ev.preventDefault();const bef=val.slice(0,ai);const nv=bef+'@'+u.handle.replace('@','')+' ';ta.value=nv;S.np=nv;mbox.style.display='none';ta.focus();};
+          mbox.appendChild(opt);
+        });
+      } else mbox.style.display='none';
+    } else mbox.style.display='none';
+  });
+  ta.addEventListener('blur',()=>setTimeout(()=>mbox.style.display='none',200));
+  cWrap.appendChild(ta);cWrap.appendChild(mbox);row.appendChild(cWrap);
+  card.appendChild(row);
+  const prev=document.createElement('div');
+  if(S.ni2){
+    prev.style.cssText='position:relative;margin-bottom:10px;';
+    const img=document.createElement('img');img.src=S.ni2;img.style.cssText='width:100%;border-radius:10px;max-height:240px;object-fit:cover;display:block;';
+    const rm=document.createElement('button');rm.style.cssText='position:absolute;top:7px;right:7px;background:#000b;color:#fff;border:none;border-radius:50%;width:25px;height:25px;cursor:pointer;font-size:12px;';rm.textContent='X';
+    rm.onclick=()=>{S.ni2='';render();};prev.appendChild(img);prev.appendChild(rm);
+  }
+  card.appendChild(prev);
+  const fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.style.display='none';
+  fi.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const reader=new FileReader();reader.onload=ev=>{
+      const imgEl=new Image();imgEl.onload=()=>{
+        const canvas=document.createElement('canvas');const mw=800;const r=Math.min(1,mw/imgEl.width);
+        canvas.width=imgEl.width*r;canvas.height=imgEl.height*r;
+        canvas.getContext('2d').drawImage(imgEl,0,0,canvas.width,canvas.height);
+        S.ni2=canvas.toDataURL('image/jpeg',0.7);render();
+      };imgEl.src=ev.target.result;
+    };reader.readAsDataURL(f);
+  };
+  card.appendChild(fi);
+  const act=document.createElement('div');act.style.cssText='display:flex;gap:8px;align-items:center;justify-content:space-between;';
+  const imgBtn=document.createElement('button');imgBtn.className='btn-o';imgBtn.innerHTML='&#128247; Imagen';imgBtn.onclick=()=>fi.click();
+  const privSel=document.createElement('select');privSel.className='priv-sel';
+  privSel.innerHTML='<option value="public">Publico</option><option value="friends">Amigos</option><option value="private">Solo yo</option>';
+  privSel.value=S.npv;privSel.onchange=e=>S.npv=e.target.value;
+  const pubBtn=document.createElement('button');pubBtn.className='btn';pubBtn.style.cssText='padding:8px 16px;font-size:13px;';pubBtn.textContent='Publicar';
+  pubBtn.onclick=async()=>{
+    if(!S.np.trim()&&!S.ni2)return;
+    pubBtn.disabled=true;pubBtn.innerHTML='<span class="spin"></span>Publicando...';
+    try{
+      await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:S.ni2?'image':'status',content:S.np,image:S.ni2||null,privacy:S.npv,createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});
+      S.np='';S.ni2='';S.npv='public';render();
+    }catch(e){alert('Error: '+e.message);pubBtn.disabled=false;pubBtn.textContent='Publicar';}
+  };
+  act.appendChild(imgBtn);act.appendChild(privSel);act.appendChild(pubBtn);card.appendChild(act);
+  return card;
+}
+
+// POST
+function renderPost(post){
+  const author=S.users[post.userId]||{name:'Usuario',handle:'@usuario',avatar:'star'};
+  const card=document.createElement('div');card.className='card';card.id='p-'+post.id;
+  if(post.type==='repost'&&post.originalUserId){
+    const origU=S.users[post.originalUserId]||{name:'Usuario'};
+    const rb=document.createElement('div');rb.className='repost-banner';
+    rb.innerHTML='&#128257; Republicado de ';
+    const bl=document.createElement('b');bl.style.cssText='color:var(--acc2);cursor:pointer;';bl.textContent=origU.name;
+    bl.onclick=()=>{S.pid=post.originalUserId;S.view='profile';render();};
+    rb.appendChild(bl);card.appendChild(rb);
+  }
+  const ph=document.createElement('div');ph.className='ph';
+  // If post belongs to a page, show page identity
+  const isPagePost=!!post.pageId;
+  const isGroupPost=!!post.groupId;
+  if(isPagePost){
+    // Page avatar
+    const pgAv=document.createElement('div');pgAv.style.cssText='width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ff6b9d,#ff4d6d);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:pointer;';
+    // Try to get page photo from cache or load it
+    if(S.pageCache&&S.pageCache[post.pageId]&&S.pageCache[post.pageId].photo){
+      const img=document.createElement('img');img.src=S.pageCache[post.pageId].photo;img.style.cssText='width:40px;height:40px;border-radius:50%;object-fit:cover;';pgAv.innerHTML='';pgAv.appendChild(img);
+    } else pgAv.innerHTML='&#127381;';
+    pgAv.onclick=()=>{S.pageId=post.pageId;S.view='page';render();};ph.appendChild(pgAv);
+    const info=document.createElement('div');info.className='ph-info';
+    const nm=document.createElement('div');nm.className='ph-name';nm.style.cursor='pointer';nm.textContent=post.pageName||'Pagina';nm.onclick=()=>{S.pageId=post.pageId;S.view='page';render();};
+    const meta=document.createElement('div');meta.className='ph-meta';meta.textContent='Pagina · '+timeAgo(post.createdAt);
+    info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
+  } else if(isGroupPost){
+    const grAv=document.createElement('div');grAv.style.cssText='width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;cursor:pointer;';
+    grAv.innerHTML='&#127775;';ph.appendChild(grAv);
+    const info=document.createElement('div');info.className='ph-info';
+    const nm=document.createElement('div');nm.className='ph-name';nm.textContent=post.groupName||'Grupo';
+    const meta=document.createElement('div');meta.className='ph-meta';meta.textContent=author.name+' · '+timeAgo(post.createdAt);
+    info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
+  } else {
+    const av=avEl(author,40);av.style.cursor='pointer';av.onclick=()=>{S.pid=post.userId;S.view='profile';render();};ph.appendChild(av);
+    const info=document.createElement('div');info.className='ph-info';
+    const nm=document.createElement('div');nm.className='ph-name';nm.style.cursor='pointer';nm.textContent=author.name;nm.onclick=()=>{S.pid=post.userId;S.view='profile';render();};
+    const meta=document.createElement('div');meta.className='ph-meta';meta.textContent=(author.handle||'@usuario')+' · '+timeAgo(post.createdAt);
+    info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
+  }
+  // Featured badge
+  if(post.featured){
+    const ftag=document.createElement('span');ftag.className='tag';ftag.style.cssText='background:#fbbf2420;color:#fbbf24;margin-right:4px;';ftag.innerHTML='&#11088; Destacado';ph.appendChild(ftag);
+  }
+  const tagSpan=document.createElement('span');
+  if(!post.privacy||post.privacy==='public'){tagSpan.className='tag tag-pub';tagSpan.innerHTML='&#127760;';}
+  else if(post.privacy==='friends'){tagSpan.className='tag tag-fri';tagSpan.innerHTML='&#128101;';}
+  else if(post.privacy==='group'){tagSpan.className='tag';tagSpan.style.cssText='background:#9b35e820;color:#c060ff;';tagSpan.innerHTML='&#127775; Grupo';}
+  else{tagSpan.className='tag tag-prv';tagSpan.innerHTML='&#128274;';}
+  ph.appendChild(tagSpan);
+  if(post.userId===S.cu.uid){
+    const del=document.createElement('button');del.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:14px;padding:2px 5px;border-radius:6px;';del.innerHTML='&#128465;';
+    del.onclick=async e=>{e.stopPropagation();if(confirm('Eliminar publicacion?'))await deleteDoc(doc(db,'posts',post.id));};
+    ph.appendChild(del);
+  }
+  // Admin feature button
+  if(isAdmin()){
+    const featBtn=document.createElement('button');featBtn.style.cssText='background:transparent;border:none;cursor:pointer;font-size:14px;padding:2px 5px;';
+    featBtn.innerHTML=post.featured?'&#11088;':'&#9734;';featBtn.title=post.featured?'Quitar destacado':'Destacar post';
+    featBtn.onclick=async e=>{e.stopPropagation();await toggleFeatured(post.id,post.featured);};
+    ph.appendChild(featBtn);
+  }
+  card.appendChild(ph);
+  if(post.content){const p=document.createElement('p');p.style.cssText='line-height:1.65;font-size:15px;margin-bottom:10px;';p.innerHTML=formatText(post.content);card.appendChild(p);}
+  if(post.image){
+    const iw=document.createElement('div');iw.style.position='relative';
+    const img=document.createElement('img');img.style.cssText='width:100%;border-radius:11px;max-height:360px;object-fit:cover;display:block;margin-bottom:10px;';img.src=post.image;iw.appendChild(img);
+    if(post.userId===S.cu.uid){
+      const di=document.createElement('button');di.style.cssText='position:absolute;top:7px;right:7px;background:#000b;color:#fff;border:none;border-radius:20px;padding:3px 9px;cursor:pointer;font-size:12px;font-weight:700;';di.textContent='Quitar imagen';
+      di.onclick=async()=>{if(confirm('Quitar imagen?'))await updateDoc(doc(db,'posts',post.id),{image:deleteField(),type:'status'});};iw.appendChild(di);
+    }
+    card.appendChild(iw);
+  }
+  const likes=post.likes||[];const isLiked=likes.includes(S.cu.uid);const isOpen=!!S.oc[post.id];const comments=post.comments||[];const reposts=post.reposts||[];const isRep=reposts.includes(S.cu.uid);
+  const acts=document.createElement('div');acts.className='act-row';
+  const lb=document.createElement('button');lb.className='ab'+(isLiked?' liked':'');lb.innerHTML=(isLiked?'&#10084;':'&#129293;')+' '+likes.length;
+  lb.onclick=async()=>{const ref=doc(db,'posts',post.id);if(isLiked)await updateDoc(ref,{likes:arrayRemove(S.cu.uid)});else{await updateDoc(ref,{likes:arrayUnion(S.cu.uid)});await addNotif(post.userId,'like',post.id,null);}};
+  let pt;lb.addEventListener('touchstart',()=>{pt=setTimeout(async()=>{if(!likes.length)return;const ns=[];for(const u of likes){const ud=await loadU(u);if(ud)ns.push(ud.name);}alert('Les gusto a:\n'+ns.join('\n'));},600);},{passive:true});
+  lb.addEventListener('touchend',()=>clearTimeout(pt),{passive:true});
+  const cb=document.createElement('button');cb.className='ab'+(isOpen?' copen':'');cb.innerHTML='&#128172; '+comments.length;
+  cb.onclick=()=>{S.oc[post.id]=!S.oc[post.id];render();};
+  const rpb=document.createElement('button');rpb.className='ab'+(isRep?' reposted':'');rpb.innerHTML='&#128257; '+reposts.length;rpb.title='Republicar';
+  rpb.onclick=async()=>{
+    if(isRep){await updateDoc(doc(db,'posts',post.id),{reposts:arrayRemove(S.cu.uid)});return;}
+    if(!confirm('Republicar este post?'))return;
+    await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:'repost',content:post.content,image:post.image||null,privacy:'public',originalUserId:post.userId,originalPostId:post.id,createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});
+    await updateDoc(doc(db,'posts',post.id),{reposts:arrayUnion(S.cu.uid)});
+    await addNotif(post.userId,'repost',post.id,null);
+  };
+  acts.appendChild(reactWrap);acts.appendChild(cb);acts.appendChild(rpb);card.appendChild(acts);
+  if(isOpen){
+    const cs=document.createElement('div');cs.className='cmts';
+    comments.forEach(c=>{
+      const cu=S.users[c.userId]||{name:'Usuario',avatar:'star'};
+      const ci=document.createElement('div');ci.className='ci';
+      ci.appendChild(avEl(cu,30));
+      const cb2=document.createElement('div');cb2.className='cb';
+      const caSpan=document.createElement('span');caSpan.className='ca';caSpan.textContent=cu.name;caSpan.onclick=()=>{S.pid=c.userId;S.view='profile';render();};
+      const ctSpan=document.createElement('span');ctSpan.className='ct2';ctSpan.textContent=timeAgo(c.createdAt);
+      const ctxtP=document.createElement('p');ctxtP.className='ctxt';ctxtP.innerHTML=formatText(c.text);
+      cb2.appendChild(caSpan);cb2.appendChild(ctSpan);cb2.appendChild(ctxtP);
+      const cBtns=document.createElement('div');cBtns.style.cssText='display:flex;gap:8px;margin-top:4px;';
+      const replyB=document.createElement('button');replyB.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:12px;font-weight:700;font-family:Nunito Sans,sans-serif;';replyB.textContent='Responder';
+      replyB.onclick=()=>{const inp=document.getElementById('ci-'+post.id);if(inp){const rv='@'+cu.handle.replace('@','')+' ';inp.value=rv;inp.focus();S.ct[post.id]=rv;}};
+      cBtns.appendChild(replyB);
+      if(c.userId===S.cu.uid){
+        const delC=document.createElement('button');delC.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:12px;font-family:Nunito Sans,sans-serif;';delC.textContent='Eliminar';
+        delC.onclick=async()=>{if(confirm('Eliminar comentario?')){const upd=post.comments.filter(x=>!(x.userId===c.userId&&x.text===c.text&&x.createdAt===c.createdAt));await updateDoc(doc(db,'posts',post.id),{comments:upd});}};
+        cBtns.appendChild(delC);
+      }
+      cb2.appendChild(cBtns);ci.appendChild(cb2);cs.appendChild(ci);
+    });
+    const ir=document.createElement('div');ir.className='ci-row';ir.style.position='relative';
+    ir.appendChild(avEl(S.me,30));
+    const cinWrap=document.createElement('div');cinWrap.style.cssText='flex:1;position:relative;';
+    const cin=document.createElement('input');cin.id='ci-'+post.id;cin.placeholder='Comenta... (usa @)';cin.value=S.ct[post.id]||'';
+    const cmbox=document.createElement('div');cmbox.className='mention-box';cmbox.id='mb-'+post.id;
+    cin.addEventListener('input',e=>{
+      S.ct[post.id]=e.target.value;
+      const val=e.target.value;const ai=val.lastIndexOf('@');
+      if(ai>=0){
+        const q2=val.slice(ai+1).toLowerCase();
+        const ms=S.friends.map(uid=>S.users[uid]).filter(u=>u&&(u.name.toLowerCase().includes(q2)||(u.handle||'').toLowerCase().includes(q2))).slice(0,5);
+        if(ms.length){
+          cmbox.innerHTML='';cmbox.style.display='block';
+          ms.forEach(u=>{
+            const opt=document.createElement('div');opt.className='mention-opt';
+            opt.innerHTML=em(u.avatar)+' <b>'+esc(u.name)+'</b> <span style="color:var(--mut);font-size:11px">'+esc(u.handle)+'</span>';
+            opt.onmousedown=ev=>{ev.preventDefault();const bef=val.slice(0,ai);const nv=bef+'@'+u.handle.replace('@','')+' ';cin.value=nv;S.ct[post.id]=nv;cmbox.style.display='none';cin.focus();};
+            cmbox.appendChild(opt);
+          });
+        } else cmbox.style.display='none';
+      } else cmbox.style.display='none';
+    });
+    cin.addEventListener('blur',()=>setTimeout(()=>cmbox.style.display='none',200));
+    cin.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendCmt(post);}});
+    cinWrap.appendChild(cin);cinWrap.appendChild(cmbox);
+    const sb=document.createElement('button');sb.className='sbtn';sb.textContent='Enviar';sb.onclick=()=>sendCmt(post);
+    ir.appendChild(cinWrap);ir.appendChild(sb);cs.appendChild(ir);card.appendChild(cs);
+  }
+  return card;
+}
+
+async function sendCmt(post){
+  const text=S.ct[post.id]||'';if(!text.trim())return;
+  S.users[S.cu.uid]=S.me;
+  const c={userId:S.cu.uid,text,createdAt:new Date().toISOString()};
+  await updateDoc(doc(db,'posts',post.id),{comments:arrayUnion(c)});
+  await addNotif(post.userId,'comment',post.id,null);
+  S.ct[post.id]='';
+}
+
+// PROFILE
+async function renderProf(app){
+  const prof=await loadU(S.pid);
+  if(!prof){app.innerHTML='<div class="empty">Usuario no encontrado.</div>';return;}
+  const uposts=S.posts.filter(p=>p.userId===S.pid);
+  const isOwn=S.pid===S.cu.uid;
+  const isF=isFriend(S.pid);
+  let fc=0;let pending=null;
+  try{
+    const sn=await getDocs(collection(db,'friendships'));
+    sn.forEach(d=>{
+      const f=d.data();
+      if(f.status==='accepted'&&(f.from===S.pid||f.to===S.pid))fc++;
+      if(f.from===S.cu.uid&&f.to===S.pid&&f.status==='pending')pending=d.id;
+    });
+  }catch(e){}
+  const wrap=document.createElement('div');
+  const nr=document.createElement('div');nr.className='nav-r';
+  const bk=document.createElement('button');bk.className='nbtn';bk.textContent='<- Feed';bk.onclick=()=>{S.view='feed';render();};
+  const ob=document.createElement('button');ob.className='nbtn';ob.textContent='Salir';ob.onclick=async()=>{if(unsubP)unsubP();if(unsubN)unsubN();await signOut(auth);};
+  nr.appendChild(bk);nr.appendChild(ob);wrap.appendChild(makeNav(nr));
+  const main=document.createElement('div');main.className='main';
+  const hc=document.createElement('div');hc.className='card';
+  const ph=document.createElement('div');ph.style.cssText='display:flex;gap:14px;align-items:flex-start;';
+  const avWrap=document.createElement('div');avWrap.className='prof-av-w';
+  if(prof.photo||prof.photoURL){const img=document.createElement('img');img.src=prof.photo||prof.photoURL;img.style.cssText='width:70px;height:70px;border-radius:50%;object-fit:cover;border:3px solid #9b35e855;';avWrap.appendChild(img);}
+  else{const avd=avEl(prof,70);avWrap.appendChild(avd);}
+  if(isOwn){
+    const ov=document.createElement('div');ov.className='av-ov';ov.innerHTML='&#128247;';avWrap.appendChild(ov);
+    const pfi=document.createElement('input');pfi.type='file';pfi.accept='image/*';pfi.style.display='none';
+    pfi.onchange=async e=>{
+      const file=e.target.files[0];if(!file)return;
+      const reader=new FileReader();reader.onload=async ev=>{
+        const imgEl=new Image();imgEl.onload=async()=>{
+          const canvas=document.createElement('canvas');const sz=300;canvas.width=sz;canvas.height=sz;
+          const ctx=canvas.getContext('2d');const mn=Math.min(imgEl.width,imgEl.height);
+          const sx=(imgEl.width-mn)/2;const sy=(imgEl.height-mn)/2;
+          ctx.drawImage(imgEl,sx,sy,mn,mn,0,0,sz,sz);
+          const photo=canvas.toDataURL('image/jpeg',0.8);
+          await updateDoc(doc(db,'users',S.cu.uid),{photo,photoURL:photo});
+          S.me={...S.me,photo};S.users[S.cu.uid]=S.me;
+          renderProf(document.getElementById('app'));
+        };imgEl.src=ev.target.result;
+      };reader.readAsDataURL(file);
+    };
+    avWrap.appendChild(pfi);avWrap.onclick=()=>pfi.click();
+  }
+  ph.appendChild(avWrap);
+  const info=document.createElement('div');info.style.flex='1';
+  const pname=document.createElement('div');pname.style.cssText='font-size:19px;font-weight:900;font-family:Nunito,sans-serif;margin-bottom:2px;';pname.textContent=prof.name;
+  const phandle=document.createElement('div');phandle.style.cssText='color:var(--mut);font-size:13px;margin-bottom:6px;';phandle.textContent=prof.handle||'';
+  const pbio=document.createElement('div');pbio.style.cssText='font-size:14px;margin-bottom:10px;line-height:1.5;';pbio.textContent=prof.bio||'Sin biografia';
+  const pstats=document.createElement('div');pstats.className='pstats';
+  const fs=document.createElement('div');fs.className='pstat';fs.innerHTML='<b>'+(isOwn?S.friends.length:fc)+'</b> <span>amigos</span>';
+  const ps=document.createElement('div');ps.className='pstat';ps.innerHTML='<b>'+uposts.length+'</b> <span>posts</span>';
+  pstats.appendChild(fs);pstats.appendChild(ps);
+  info.appendChild(pname);info.appendChild(phandle);info.appendChild(pbio);info.appendChild(pstats);
+  if(isOwn){
+    const privDiv=document.createElement('div');privDiv.style.marginTop='10px';
+    const privL=document.createElement('div');privL.className='fl';privL.textContent='Privacidad del perfil';
+    const privS=document.createElement('select');privS.className='priv-sel';privS.style.width='100%';
+    privS.innerHTML='<option value="false">Perfil publico</option><option value="true">Perfil privado (solo amigos)</option>';
+    privS.value=String(prof.privateProfile||false);
+    privS.onchange=async e=>{const ip=e.target.value==='true';await updateDoc(doc(db,'users',S.cu.uid),{privateProfile:ip});S.me={...S.me,privateProfile:ip};S.users[S.cu.uid]=S.me;};
+    privDiv.appendChild(privL);privDiv.appendChild(privS);info.appendChild(privDiv);
+
+    // Edit profile button
+    const editBtn=document.createElement('button');editBtn.className='btn-o';editBtn.style.cssText='width:100%;margin-top:10px;font-size:13px;';editBtn.textContent='Editar perfil';
+    editBtn.onclick=()=>{
+      // Show inline edit form
+      const editForm=document.createElement('div');editForm.style.cssText='margin-top:12px;display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--bor);padding-top:12px;';
+      const efl=document.createElement('div');efl.className='fl';efl.textContent='Editar perfil';editForm.appendChild(efl);
+      const nameI=document.createElement('input');nameI.placeholder='Nombre';nameI.value=prof.name||'';
+      const handleI=document.createElement('input');handleI.placeholder='@usuario';handleI.value=prof.handle||'';
+      const bioI=document.createElement('input');bioI.placeholder='Biografia';bioI.value=prof.bio||'';
+      const saveBtn=document.createElement('button');saveBtn.className='btn';saveBtn.style.cssText='width:100%;font-size:13px;';saveBtn.textContent='Guardar cambios';
+      saveBtn.onclick=async()=>{
+        const newName=nameI.value.trim();const newHandle=handleI.value.trim();const newBio=bioI.value.trim();
+        if(!newName){alert('El nombre no puede estar vacio.');return;}
+        const h=newHandle.startsWith('@')?newHandle:'@'+newHandle;
+        saveBtn.disabled=true;saveBtn.innerHTML='<span class="spin"></span>Guardando...';
+        await updateDoc(doc(db,'users',S.cu.uid),{name:newName,handle:h,bio:newBio});
+        S.me={...S.me,name:newName,handle:h,bio:newBio};S.users[S.cu.uid]=S.me;
+        alert('Perfil actualizado!');renderProf(document.getElementById('app'));
+      };
+      const cancelBtn=document.createElement('button');cancelBtn.className='btn-o';cancelBtn.style.cssText='width:100%;font-size:13px;';cancelBtn.textContent='Cancelar';
+      cancelBtn.onclick=()=>editForm.remove();
+      editForm.appendChild(nameI);editForm.appendChild(handleI);editForm.appendChild(bioI);editForm.appendChild(saveBtn);editForm.appendChild(cancelBtn);
+      info.appendChild(editForm);editBtn.style.display='none';
+    };
+    info.appendChild(editBtn);
+    // Admin toggle (only visible to self, to grant/revoke admin)
+    if(isAdmin()){
+      const adminBadge=document.createElement('div');adminBadge.style.cssText='margin-top:8px;background:#fbbf2418;border:1px solid #fbbf2433;border-radius:8px;padding:6px 10px;font-size:12px;color:#fbbf24;font-weight:700;';
+      adminBadge.innerHTML='&#9889; Admin de Xelfi';info.appendChild(adminBadge);
+    }
+  }
+  ph.appendChild(info);
+  if(!isOwn){
+    const bw2=document.createElement('div');bw2.style.cssText='display:flex;flex-direction:column;gap:6px;align-items:flex-end;';
+    const isBlk=isBlocked(S.pid);
+    const blkBtn=document.createElement('button');blkBtn.style.cssText='background:transparent;border:none;color:var(--mut);font-size:12px;cursor:pointer;text-decoration:underline;';
+    blkBtn.textContent=isBlk?'Desbloquear':'Bloquear usuario';
+    blkBtn.onclick=async()=>{if(isBlk)await unblockUser(S.pid);else await blockUser(S.pid);};
+    if(isF){
+      const fb=document.createElement('button');fb.className='btn-o';fb.style.cssText='color:var(--grn);border-color:#4ade8055;font-size:13px;';fb.textContent='Amigos';fb.disabled=true;bw2.appendChild(fb);
+      if(!isBlocked(S.pid)&&!isBlockedBy(S.pid)){
+        const mb=document.createElement('button');mb.className='btn';mb.style.cssText='padding:8px 14px;font-size:13px;display:block;';mb.innerHTML='&#128172; Mensaje';
+        mb.onclick=()=>{S.chatWith=S.pid;S.view='chat';render();};bw2.appendChild(mb);
+      }
+    }
+    else if(pending){const fb=document.createElement('button');fb.className='btn-o';fb.style.fontSize='13px';fb.textContent='Solicitud enviada';fb.disabled=true;bw2.appendChild(fb);}
+    else{const fb=document.createElement('button');fb.className='btn';fb.style.cssText='padding:8px 14px;font-size:13px;';fb.textContent='Agregar amigo';fb.onclick=async()=>{await sendFriendReq(S.pid);fb.textContent='Solicitud enviada';fb.disabled=true;fb.style.opacity='.6';};bw2.appendChild(fb);}
+    bw2.appendChild(blkBtn);
+    ph.appendChild(bw2);
+  }
+  hc.appendChild(ph);main.appendChild(hc);
+  if(!isOwn&&(isBlocked(S.pid)||isBlockedBy(S.pid))){
+    const bb=document.createElement('div');bb.className='block-banner';bb.innerHTML='&#128683; '+(isBlocked(S.pid)?'Has bloqueado a este usuario.':'No puedes ver el contenido de este usuario.');main.appendChild(bb);
+  } else if(prof.privateProfile&&!isOwn&&!isF){
+    const lock=document.createElement('div');lock.className='lock-msg';lock.innerHTML='&#128274; Este perfil es privado. Solo sus amigos pueden ver sus publicaciones.';main.appendChild(lock);
+  } else {
+    if(!uposts.length){const e=document.createElement('div');e.className='empty';e.textContent='Sin publicaciones aun.';main.appendChild(e);}
+    else uposts.forEach(p=>main.appendChild(renderPost(p)));
+  }
+  wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+</script>
+</body>
+</html>
