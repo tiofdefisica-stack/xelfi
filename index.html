@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Xelfi</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#9b35e8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Xelfi">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Nunito+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e0b14;--surf:#16121f;--card:#1c1729;--bor:#2e2540;--acc:#9b35e8;--acc2:#c060ff;--txt:#ede8f5;--mut:#7a6a9a;--red:#ff4d6d;--grn:#4ade80;--yel:#fbbf24;}
@@ -736,6 +741,13 @@ async function renderNewPage(app){
   const errD=document.createElement('div');errD.className='err';errD.style.display='none';const btn=document.createElement('button');btn.className='btn';btn.style.width='100%';btn.textContent='Crear pagina';
   btn.onclick=async()=>{if(!S.pf.name.trim()){errD.textContent='La pagina necesita un nombre.';errD.style.display='';return;}btn.disabled=true;btn.innerHTML='<span class="spin"></span>Creando...';try{await addDoc(collection(db,'pages'),{name:S.pf.name,desc:S.pf.desc||'',emoji:se2,photo:S.pf.photo||'',adminId:S.cu.uid,followers:[],createdAt:serverTimestamp()});S.pf={name:'',desc:'',emoji:'📺',photo:''};S.view='groups';render();}catch(e){errD.textContent='Error: '+e.message;errD.style.display='';btn.disabled=false;btn.textContent='Crear pagina';}};
   form.appendChild(errD);form.appendChild(btn);card.appendChild(form);main.appendChild(card);wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
 }
 </script>
 </body>
