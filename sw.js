@@ -1,4 +1,4 @@
-const CACHE = 'xelfi-v2';
+const CACHE = 'xelfi-v3';
 const ASSETS = [
   '/xelfi/',
   '/xelfi/index.html'
