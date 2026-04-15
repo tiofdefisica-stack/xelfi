@@ -626,7 +626,7 @@ onAuthStateChanged(auth,async u=>{
       S.cu=u;const p=await loadU(u.uid);S.me=p;if(p)S.users[u.uid]=p;await loadFriends();await loadBlocked();
       // Load xelfi banner
       try{const bn=await getDoc(doc(db,'config','banner'));if(bn.exists())S.xelfiBanner=bn.data().text;}catch(e){}
-      S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildGlobalChat(),1000);setTimeout(()=>buildStoreBubble(),1200);}
+      S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildStoreBubble(),1200);}
     else{S.cu=null;S.me=null;S.view='login';if(unsubN)unsubN();if(unsubP)unsubP();}
     render();
   }catch(err){console.error(err);document.getElementById('app').innerHTML='<div style="padding:40px;text-align:center;color:var(--red);">Error cargando: '+err.message+'</div>';}
