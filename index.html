@@ -944,7 +944,7 @@ function renderPost(post){
     const ytM=post.content.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
     if(ytM){const iframe=document.createElement('iframe');iframe.src='https://www.youtube.com/embed/'+ytM[1];iframe.style.cssText='width:100%;aspect-ratio:16/9;border:none;border-radius:10px;margin-bottom:8px;display:block;';iframe.allowFullscreen=true;card.appendChild(iframe);}
   }
-  if(post.image){const img=document.createElement('img');img.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:420px;object-fit:cover;display:block;margin-bottom:'+(post.images?'0':'8px')+';cursor:pointer;';
+  if(post.image&&!post._showEmbedded){const img=document.createElement('img');img.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:420px;object-fit:cover;display:block;margin-bottom:'+(post.images?'0':'8px')+';cursor:pointer;';
   const allImgs=post.images?[post.image,...post.images]:[post.image];
   img.onclick=()=>openImageViewer(allImgs,0);img.src=post.image;card.appendChild(img);
   // Show additional images if any
