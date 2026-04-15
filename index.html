@@ -897,7 +897,13 @@ function renderPost(post){
     card.style.cssText+='border-color:var(--acc);background:linear-gradient(135deg,var(--card),#1c1040);';
     const pin=document.createElement('div');pin.style.cssText='font-size:11px;font-weight:800;color:var(--acc2);margin-bottom:6px;display:flex;align-items:center;gap:4px;';pin.innerHTML='📌 Anuncio de Xelfi';card.appendChild(pin);
   }
-  if(post.type==='repost'&&post.originalUserId){const ou=S.users[post.originalUserId]||{name:'?'};const rb=document.createElement('div');rb.className='rp-banner';rb.innerHTML='🔄 Republicado de ';const bl=document.createElement('b');bl.style.cssText='color:var(--acc2);cursor:pointer;';bl.textContent=ou.name;bl.onclick=()=>{S.pid=post.originalUserId;S.view='profile';render();};rb.appendChild(bl);card.appendChild(rb);}
+  if(post.type==='repost'&&post.originalUserId){
+    const ou=S.users[post.originalUserId]||{name:'?',handle:'',avatar:'star',photo:''};
+    // Small "shared by" label at top
+    const rb=document.createElement('div');rb.className='rp-banner';rb.textContent='🔄 Compartido';card.appendChild(rb);
+    // After reposter content, add embedded original post card
+    // We'll add it after this block using a flag
+    post._showEmbedded=true;post._originalUser=ou;}
   const ph=document.createElement('div');ph.className='ph';
   if(post.pageId){
     const pg=S.pageCache[post.pageId];const pa=document.createElement('div');pa.className='pav';pa.style.cssText='width:42px;height:42px;cursor:pointer;font-size:18px;';if(pg?.photo){const img=document.createElement('img');img.src=pg.photo;img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';pa.appendChild(img);}else pa.textContent=post.pageEmoji||'📺';pa.onclick=()=>{S.pageId=post.pageId;S.view='page';render();};ph.appendChild(pa);
@@ -953,6 +959,25 @@ function renderPost(post){
   let myR=null;REACTIONS.forEach(r=>{if(Array.isArray(reactions[r.k])&&reactions[r.k].includes(S.cu.uid))myR=r;});
   const total=REACTIONS.reduce((s,r)=>s+(Array.isArray(reactions[r.k])?reactions[r.k].length:0),0);
   const isOpen=!!S.oc[post.id];const comments=post.comments||[];const reposts=post.reposts||[];const isRep=reposts.includes(S.cu.uid);
+  // Show embedded original post for reposts
+  if(post._showEmbedded){
+    const ou=post._originalUser||{name:'?'};
+    const embed=document.createElement('div');embed.style.cssText='border:1px solid var(--bor);border-radius:12px;padding:10px 12px;margin-bottom:10px;background:var(--surf);cursor:pointer;';
+    embed.onclick=()=>{if(post.originalPostId){S.pid=post.originalUserId;S.view='profile';render();}};
+    // Author row
+    const eAuth=document.createElement('div');eAuth.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    const eAv=document.createElement('div');eAv.className='av';eAv.style.cssText='width:32px;height:32px;flex-shrink:0;font-size:14px;';
+    if(ou.photo){const img=document.createElement('img');img.src=ou.photo;img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';eAv.appendChild(img);}else eAv.textContent=em(ou.avatar);
+    const eInfo=document.createElement('div');
+    const eName=document.createElement('div');eName.style.cssText='font-weight:800;font-size:13px;font-family:Nunito,sans-serif;';eName.textContent=ou.name;
+    const eHandle=document.createElement('div');eHandle.style.cssText='font-size:11px;color:var(--mut);';eHandle.textContent=ou.handle||'';
+    eInfo.appendChild(eName);eInfo.appendChild(eHandle);eAuth.appendChild(eAv);eAuth.appendChild(eInfo);embed.appendChild(eAuth);
+    // Original content
+    if(post.originalContent){const eTxt=document.createElement('p');eTxt.style.cssText='font-size:13px;color:var(--txt);line-height:1.5;margin-bottom:6px;';eTxt.textContent=(post.originalContent||'').slice(0,200)+(post.originalContent?.length>200?'...':'');embed.appendChild(eTxt);}
+    // Original image
+    if(post.image){const eImg=document.createElement('img');eImg.src=post.image;eImg.style.cssText='width:100%;border-radius:8px;max-height:200px;object-fit:cover;';embed.appendChild(eImg);}
+    card.appendChild(embed);
+  }
   const acts=document.createElement('div');acts.className='act-row';
   // React
   const rw=document.createElement('div');rw.style.position='relative';
