@@ -606,7 +606,25 @@ onAuthStateChanged(auth,async u=>{
   }catch(err){console.error(err);document.getElementById('app').innerHTML='<div style="padding:40px;text-align:center;color:var(--red);">Error cargando: '+err.message+'</div>';}
 });
 
+// Back button
+let xelfiHistory=['feed'];
+window.addEventListener('popstate',()=>{
+  if(xelfiHistory.length>1){
+    xelfiHistory.pop();
+    S.view=xelfiHistory[xelfiHistory.length-1]||'feed';
+    render();
+  } else {
+    history.pushState(null,'',window.location.href);
+  }
+});
+
 function render(){
+  // Track navigation history
+  if(xelfiHistory[xelfiHistory.length-1]!==S.view){
+    xelfiHistory.push(S.view);
+    if(xelfiHistory.length>15)xelfiHistory.shift();
+    history.pushState(null,'',window.location.href);
+  }
   const app=document.getElementById('app');app.innerHTML='';
   const ob=document.getElementById('bnav');if(ob)ob.remove();
   if(!S.cu){app.appendChild(S.view==='register'?renderReg():renderLogin());return;}
@@ -2257,6 +2275,9 @@ async function sendGChat(){
   if(gchatReplyTo)msgData.replyTo=gchatReplyTo;
   try{await addDoc(collection(db,'gchat'),msgData);gchatReplyTo=null;const rp=document.getElementById('gchat-reply-prev');if(rp)rp.classList.remove('show');}catch(e){console.error(e);}
 }
+
+// Init back button history
+history.pushState(null,'',window.location.href);
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 </script>
