@@ -2309,6 +2309,35 @@ function closeStoreFeed(){
   const panel=document.getElementById('store-feed-panel');if(panel)panel.classList.remove('open');
 }
 
+function openStoreAnnouncePanel(container){
+  // Remove existing panel if any
+  const existing=document.getElementById('store-announce-panel');if(existing)existing.remove();
+  const panel=document.createElement('div');panel.id='store-announce-panel';
+  panel.style.cssText='background:var(--card);border:2px solid #fbbf24;border-radius:14px;padding:14px;margin-bottom:14px;';
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:14px;font-family:Nunito,sans-serif;color:#fbbf24;margin-bottom:10px;';title.textContent='📢 Publicar anuncio oficial @xelfi';
+  const ta=document.createElement('textarea');ta.style.cssText='width:100%;background:var(--bg);border:1.5px solid var(--bor);border-radius:10px;padding:10px 12px;color:var(--txt);font-size:14px;outline:none;resize:none;font-family:Nunito Sans,sans-serif;min-height:80px;margin-bottom:10px;';ta.placeholder='Escribe el anuncio para el feed comercial...';
+  const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;';
+  const pub=document.createElement('button');pub.style.cssText='flex:1;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';pub.textContent='Publicar';
+  pub.onclick=async()=>{
+    const txt=ta.value.trim();if(!txt)return;
+    pub.disabled=true;pub.textContent='Publicando...';
+    try{
+      // Delete previous pinned store posts
+      const sn=await getDocs(collection(db,'store_posts'));
+      for(const d of sn.docs){if(d.data().isPinned)await deleteDoc(doc(db,'store_posts',d.id));}
+      // Add new pinned
+      await addDoc(collection(db,'store_posts'),{userId:S.cu.uid,isXelfi:true,isPinned:true,content:txt,createdAt:serverTimestamp()});
+      panel.remove();
+      // Reload feed
+      loadStoreAds(container);
+    }catch(e){alert('Error: '+e.message);pub.disabled=false;pub.textContent='Publicar';}
+  };
+  const cl=document.createElement('button');cl.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;color:var(--mut);';cl.textContent='Cancelar';cl.onclick=()=>panel.remove();
+  row.appendChild(pub);row.appendChild(cl);panel.appendChild(title);panel.appendChild(ta);panel.appendChild(row);
+  container.insertBefore(panel,container.firstChild);
+  ta.focus();
+}
+
 const FAKE_ADS=[
   {id:'f1',emoji:'🍕',title:'Pizzería El Rincón',content:'Las mejores pizzas artesanales de la ciudad. Ingredientes frescos, masa madre y horneado en horno de leña. ¡Pide ahora y recibe en 30 minutos!',tag:'Restauración',color:'#ef4444'},
   {id:'f2',emoji:'💻',title:'TechFix — Reparación de móviles',content:'Reparamos tu pantalla rota en menos de 1 hora. Garantía de 6 meses en todas las reparaciones. Servicio a domicilio disponible.',tag:'Tecnología',color:'#3b82f6'},
@@ -2350,8 +2379,26 @@ async function loadStoreAds(container){
     const toolbar=document.createElement('div');toolbar.style.cssText='background:linear-gradient(135deg,#ff4d6d22,#9b35e822);border:1px solid #9b35e844;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
     const lbl=document.createElement('div');lbl.style.cssText='font-weight:800;font-size:13px;font-family:Nunito,sans-serif;color:var(--acc2);flex:1;';lbl.textContent='🛡️ Panel de anuncios';
     const addBtn=document.createElement('button');addBtn.style.cssText='background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';addBtn.textContent='+ Añadir anuncio';addBtn.onclick=()=>alert('Próximamente: formulario para añadir anuncio real');
-    toolbar.appendChild(lbl);toolbar.appendChild(addBtn);container.appendChild(toolbar);
+    // Announce as xelfi button
+    const announceBtn=document.createElement('button');announceBtn.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';announceBtn.textContent='📢 Anuncio @xelfi';
+    announceBtn.onclick=()=>openStoreAnnouncePanel(container);
+    toolbar.appendChild(lbl);toolbar.appendChild(addBtn);toolbar.appendChild(announceBtn);container.appendChild(toolbar);
   }
+  // Load pinned store post from Firestore
+  try{
+    const storeSn=await getDocs(query(collection(db,'store_posts'),orderBy('createdAt','desc')));
+    storeSn.forEach(d=>{
+      const sp=d.data();
+      if(sp.isPinned&&sp.isXelfi){
+        const pinnedCard=document.createElement('div');pinnedCard.className='store-ad-card';
+        pinnedCard.style.cssText+='border-color:#fbbf24;background:linear-gradient(135deg,var(--card),#2a1f00);';
+        const pinLabel=document.createElement('div');pinLabel.style.cssText='font-size:11px;font-weight:800;color:#fbbf24;margin-bottom:8px;display:flex;align-items:center;gap:4px;font-family:Nunito,sans-serif;';pinLabel.textContent='📌 Anuncio oficial de @xelfi';pinnedCard.appendChild(pinLabel);
+        const pinnedTxt=document.createElement('p');pinnedTxt.style.cssText='font-size:14px;line-height:1.6;color:var(--txt);white-space:pre-wrap;';pinnedTxt.textContent=sp.content||'';pinnedCard.appendChild(pinnedTxt);
+        if(admin){const delP=document.createElement('button');delP.style.cssText='margin-top:10px;background:#ff4d6d22;border:1px solid #ff4d6d44;color:#ff4d6d;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';delP.textContent='🗑️ Borrar anuncio';delP.onclick=async()=>{await deleteDoc(doc(db,'store_posts',d.id));pinnedCard.remove();};pinnedCard.appendChild(delP);}
+        container.appendChild(pinnedCard);
+      }
+    });
+  }catch(e){}
   // Fake ads
   FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
 }
