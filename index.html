@@ -873,7 +873,9 @@ function handleMention(val,box,cb){
 
 // POST
 function renderPost(post){
-  const author=S.users[post.userId]||{name:'Usuario',handle:'@usuario',avatar:'star'};
+  const author=post.isXelfi
+    ? {name:'Xelfi',handle:'@xelfi',avatar:'rocket',photo:''}
+    : S.users[post.userId]||{name:'Usuario',handle:'@usuario',avatar:'star'};
   const card=document.createElement('div');card.className='card';card.id='p-'+post.id;
   if(post.type==='repost'&&post.originalUserId){const ou=S.users[post.originalUserId]||{name:'?'};const rb=document.createElement('div');rb.className='rp-banner';rb.innerHTML='🔄 Republicado de ';const bl=document.createElement('b');bl.style.cssText='color:var(--acc2);cursor:pointer;';bl.textContent=ou.name;bl.onclick=()=>{S.pid=post.originalUserId;S.view='profile';render();};rb.appendChild(bl);card.appendChild(rb);}
   const ph=document.createElement('div');ph.className='ph';
@@ -1601,13 +1603,20 @@ function openAdminPanel(){
     const t4=document.createElement('div');t4.className='admin-section-title';t4.textContent='Publicar anuncio como @xelfi';s4.appendChild(t4);
     const inp4=document.createElement('textarea');inp4.className='admin-input';inp4.placeholder='Escribe el anuncio...';inp4.rows=3;inp4.id='admin-announce-txt';s4.appendChild(inp4);
     const b5=document.createElement('button');b5.className='admin-btn safe';b5.innerHTML='📢 Publicar anuncio';
-    b5.onclick=async()=>{const txt=document.getElementById('admin-announce-txt').value.trim();if(!txt)return;try{
-        await addDoc(collection(db,'posts'),{userId:S.cu.uid,userName:'Xelfi',userHandle:'@xelfi',userAvatar:'rocket',content:txt,createdAt:serverTimestamp(),likes:[],reposts:[],comments:[],isXelfi:true,privacy:'public'});
+    b5.onclick=async()=>{
+      const txt=document.getElementById('admin-announce-txt').value.trim();if(!txt)return;
+      try{
+        // Delete previous pinned xelfi posts
+        const sn=await getDocs(collection(db,'posts'));
+        for(const d of sn.docs){if(d.data().isXelfi&&d.data().isPinned)await deleteDoc(doc(db,'posts',d.id));}
+        // Add new pinned post
+        await addDoc(collection(db,'posts'),{userId:S.cu.uid,isXelfi:true,isPinned:true,content:txt,createdAt:serverTimestamp(),likes:[],reposts:[],comments:[],privacy:'public'});
         alert('✅ Anuncio publicado!');
         document.getElementById('admin-announce-txt').value='';
         ov.classList.remove('open');
         S.view='feed';render();
-      }catch(err){alert('Error: '+err.message);}};s4.appendChild(b5);
+      }catch(err){alert('Error: '+err.message);}
+    };s4.appendChild(b5);
     box.appendChild(s4);
 
     ov.appendChild(box);
