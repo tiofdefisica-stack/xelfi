@@ -910,7 +910,7 @@ function renderPost(post){
     // Gold name if purchased
     const authorPurchases=author.purchases||{};
     const goldActive=authorPurchases.name_gold&&(authorPurchases.name_gold.permanent||new Date(authorPurchases.name_gold.expires)>new Date());
-    if(goldActive)nm.style.cssText+='background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;';const meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--mut);';meta.textContent=(author.handle||'')+' · '+timeAgo(post.createdAt);info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
+    if(goldActive)nmText.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;';const meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--mut);';meta.textContent=(author.handle||'')+' · '+timeAgo(post.createdAt);info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
   }
   const tg=document.createElement('span');tg.className='tag '+(post.privacy==='friends'?'tfri':post.privacy==='private'?'tprv':post.privacy==='group'?'tgrp':'tpub');tg.textContent=post.privacy==='friends'?'👥':post.privacy==='private'?'🔒':post.privacy==='group'?'Grupo':'🌐';ph.appendChild(tg);
   if(post.userId===S.cu.uid){const del=document.createElement('button');del.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';del.textContent='🗑️';del.onclick=async e=>{e.stopPropagation();if(confirm('Eliminar?'))await deleteDoc(doc(db,'posts',post.id));};ph.appendChild(del);}
