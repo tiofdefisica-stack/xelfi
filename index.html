@@ -2296,26 +2296,51 @@ function closeStoreFeed(){
   const panel=document.getElementById('store-feed-panel');if(panel)panel.classList.remove('open');
 }
 
+const FAKE_ADS=[
+  {id:'f1',emoji:'🍕',title:'Pizzería El Rincón',content:'Las mejores pizzas artesanales de la ciudad. Ingredientes frescos, masa madre y horneado en horno de leña. ¡Pide ahora y recibe en 30 minutos!',tag:'Restauración',color:'#ef4444'},
+  {id:'f2',emoji:'💻',title:'TechFix — Reparación de móviles',content:'Reparamos tu pantalla rota en menos de 1 hora. Garantía de 6 meses en todas las reparaciones. Servicio a domicilio disponible.',tag:'Tecnología',color:'#3b82f6'},
+  {id:'f3',emoji:'💆',title:'Spa & Bienestar Lumina',content:'Escapa del estrés con nuestros masajes relajantes y tratamientos faciales. Primera sesión con 20% de descuento para usuarios de Xelfi.',tag:'Bienestar',color:'#a78bfa'},
+  {id:'f4',emoji:'🏋️',title:'GymPro — Tu gimnasio online',content:'Entrena desde casa con nuestros planes personalizados. Más de 200 rutinas en vídeo, nutricionista incluido. Primer mes gratis.',tag:'Deporte',color:'#22c55e'},
+  {id:'f5',emoji:'📚',title:'Academia Digital Saber+',content:'Cursos online de programación, diseño y marketing. Aprende a tu ritmo con tutores en directo. Certificados reconocidos.',tag:'Educación',color:'#fbbf24'},
+  {id:'f6',emoji:'🏠',title:'Inmobiliaria CasaNueva',content:'Encuentra el hogar de tus sueños. Más de 500 propiedades en tu ciudad. Tasación gratuita y asesoría sin compromiso.',tag:'Inmobiliaria',color:'#f59e0b'},
+];
+
+function buildAdCard(ad, isAdmin){
+  const card=document.createElement('div');card.className='store-ad-card';card.style.cssText+='overflow:hidden;';
+  if(isAdmin){
+    const adminBar=document.createElement('div');adminBar.style.cssText='display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px;';
+    const delBtn=document.createElement('button');delBtn.style.cssText='background:#ff4d6d22;border:1px solid #ff4d6d44;color:#ff4d6d;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';delBtn.textContent='🗑️ Borrar';delBtn.onclick=()=>card.remove();
+    const editBtn=document.createElement('button');editBtn.style.cssText='background:var(--acc2)22;border:1px solid var(--acc2)44;color:var(--acc2);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';editBtn.textContent='✏️ Editar';
+    adminBar.appendChild(editBtn);adminBar.appendChild(delBtn);card.appendChild(adminBar);
+  }
+  // Color strip
+  const strip=document.createElement('div');strip.style.cssText='height:4px;background:'+ad.color+';border-radius:4px;margin-bottom:12px;';card.appendChild(strip);
+  // Header
+  const hd=document.createElement('div');hd.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;';
+  const ico=document.createElement('div');ico.style.cssText='width:44px;height:44px;border-radius:12px;background:'+ad.color+'22;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:1px solid '+ad.color+'44;';ico.textContent=ad.emoji;
+  const info=document.createElement('div');info.style.flex='1';
+  const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:15px;font-family:Nunito,sans-serif;';nm.textContent=ad.title;
+  const badge=document.createElement('div');badge.className='store-ad-badge';badge.textContent=ad.tag;badge.style.cssText+='margin-top:3px;';
+  info.appendChild(nm);info.appendChild(badge);hd.appendChild(ico);hd.appendChild(info);card.appendChild(hd);
+  // Content
+  const txt=document.createElement('div');txt.style.cssText='font-size:13px;color:var(--mut);line-height:1.6;margin-bottom:12px;';txt.textContent=ad.content;card.appendChild(txt);
+  // CTA button
+  const btn=document.createElement('button');btn.style.cssText='width:100%;padding:11px;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;color:#fff;background:'+ad.color+';';btn.textContent='Más información →';btn.onclick=()=>alert('Próximamente enlace a: '+ad.title);card.appendChild(btn);
+  return card;
+}
+
 async function loadStoreAds(container){
-  container.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Cargando...</div>';
-  try{
-    const sn=await getDocs(query(collection(db,'ads'),orderBy('createdAt','desc')));
-    container.innerHTML='';
-    if(sn.empty){
-      container.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);"><div style="font-size:40px;margin-bottom:12px;">🛍️</div><div style="font-weight:800;font-family:Nunito,sans-serif;margin-bottom:6px;">Xelfi Market</div><div style="font-size:13px;">Próximamente anunciantes aquí.<br>¿Quieres anunciarte? Contacta con @xelfi</div></div>';
-      return;
-    }
-    sn.forEach(d=>{
-      const ad={id:d.id,...d.data()};
-      const card=document.createElement('div');card.className='store-ad-card';
-      const badge=document.createElement('div');badge.className='store-ad-badge';badge.textContent='Patrocinado';card.appendChild(badge);
-      if(ad.image){const img=document.createElement('img');img.src=ad.image;img.style.cssText='width:100%;border-radius:10px;margin-bottom:10px;max-height:200px;object-fit:cover;';card.appendChild(img);}
-      const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:15px;font-family:Nunito,sans-serif;margin-bottom:4px;';nm.textContent=ad.title||'';card.appendChild(nm);
-      const txt=document.createElement('div');txt.style.cssText='font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:10px;';txt.textContent=ad.content||'';card.appendChild(txt);
-      if(ad.url){const btn=document.createElement('button');btn.className='btn';btn.style.cssText='font-size:13px;width:100%;';btn.textContent='Ver más →';btn.onclick=()=>window.open(ad.url,'_blank');card.appendChild(btn);}
-      container.appendChild(card);
-    });
-  }catch(e){container.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);">Error cargando. Inténtalo de nuevo.</div>';}
+  container.innerHTML='';
+  const admin=isAdmin();
+  // Admin toolbar
+  if(admin){
+    const toolbar=document.createElement('div');toolbar.style.cssText='background:linear-gradient(135deg,#ff4d6d22,#9b35e822);border:1px solid #9b35e844;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
+    const lbl=document.createElement('div');lbl.style.cssText='font-weight:800;font-size:13px;font-family:Nunito,sans-serif;color:var(--acc2);flex:1;';lbl.textContent='🛡️ Panel de anuncios';
+    const addBtn=document.createElement('button');addBtn.style.cssText='background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';addBtn.textContent='+ Añadir anuncio';addBtn.onclick=()=>alert('Próximamente: formulario para añadir anuncio real');
+    toolbar.appendChild(lbl);toolbar.appendChild(addBtn);container.appendChild(toolbar);
+  }
+  // Fake ads
+  FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
 }
 
 // GLOBAL CHAT
