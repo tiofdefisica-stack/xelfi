@@ -2142,7 +2142,7 @@ function buildGlobalChat(){
   // Header
   const hdr=document.createElement('div');hdr.className='gchat-header';
   hdr.innerHTML='<div class="gchat-hav">🌐</div><div class="gchat-hinfo"><div class="gchat-hname">Chat Global Xelfi</div><div class="gchat-hsub"><span class="online-dot"></span> <span id="gchat-online">cargando...</span></div></div>';
-  const cl=document.createElement('button');cl.className='gchat-close';cl.textContent='✕';cl.onclick=closeGChat;hdr.appendChild(cl);panel.appendChild(hdr);
+  const cl=document.createElement('button');cl.className='gchat-close';cl.style.cssText='position:absolute;top:12px;right:12px;z-index:10;background:#00000033;border:none;color:var(--txt);font-size:22px;cursor:pointer;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;';cl.textContent='✕';cl.onclick=closeGChat;document.getElementById('gchat-panel').appendChild(cl);panel.appendChild(hdr);
   // Users strip
   const us=document.createElement('div');us.className='gchat-users';us.id='gchat-users';panel.appendChild(us);
   // Messages
