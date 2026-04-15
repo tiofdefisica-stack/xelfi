@@ -2113,6 +2113,9 @@ async function sqEndGame(){
 let gchatOpen=false;let gchatUnsub=null;let gchatUnread=0;let gchatReply=null;let gchatReplyTo=null;
 
 function buildGlobalChat(){
+  // Remove old panel if exists to force rebuild
+  const oldPanel=document.getElementById('gchat-panel');if(oldPanel)oldPanel.remove();
+  const oldBub=document.getElementById('gchat-bubble');if(oldBub)oldBub.remove();
   // Bubble
   const bub=document.createElement('div');bub.className='gchat-bubble';bub.id='gchat-bubble';bub.textContent='💬';
   const badge=document.createElement('div');badge.className='gchat-badge';badge.id='gchat-badge';bub.appendChild(badge);
