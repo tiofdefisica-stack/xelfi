@@ -786,7 +786,7 @@ function renderFeed(){
   unsubP=onSnapshot(query(collection(db,'posts'),orderBy('createdAt','desc')),async sn=>{
     if(S.cu&&S.me)S.users[S.cu.uid]=S.me;
     const list=[];
-    for(const d of sn.docs){try{const p={id:d.id,...d.data()};if(!S.users[p.userId])await loadU(p.userId);if(canSee(p))list.push(p);}catch(e){}}
+    for(const d of sn.docs){try{const p={id:d.id,...d.data()};if(p.isXelfi){list.push(p);}else{if(!S.users[p.userId])await loadU(p.userId);if(canSee(p))list.push(p);}}catch(e){}}
     S.posts=list;
     const con=document.getElementById('pcon');if(!con)return;
     const sy=window.scrollY;con.innerHTML='';
