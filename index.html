@@ -787,6 +787,8 @@ function renderFeed(){
     if(S.cu&&S.me)S.users[S.cu.uid]=S.me;
     const list=[];
     for(const d of sn.docs){try{const p={id:d.id,...d.data()};if(!S.users[p.userId])await loadU(p.userId);if(canSee(p))list.push(p);}catch(e){}}
+    // Sort: pinned xelfi posts first
+    list.sort((a,b)=>{if(a.isPinned&&!b.isPinned)return -1;if(!a.isPinned&&b.isPinned)return 1;return 0;});
     S.posts=list;
     const con=document.getElementById('pcon');if(!con)return;
     const sy=window.scrollY;con.innerHTML='';
