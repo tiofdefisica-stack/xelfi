@@ -185,6 +185,17 @@ textarea{resize:none;line-height:1.5;}
 .story-preview{width:100%;aspect-ratio:9/16;max-height:280px;border-radius:12px;overflow:hidden;background:var(--surf);display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:40px;}
 .story-preview img{width:100%;height:100%;object-fit:cover;}
 
+/* REPOST COMPOSER */
+.repost-overlay{position:fixed;inset:0;background:#000b;z-index:2000;display:none;align-items:flex-end;justify-content:center;}
+.repost-overlay.open{display:flex;}
+.repost-box{background:var(--card);border:2px solid var(--bor);border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;}
+.repost-title{font-weight:900;font-size:15px;font-family:Nunito,sans-serif;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.repost-textarea{width:100%;background:var(--bg);border:1.5px solid var(--bor);border-radius:10px;padding:10px 12px;color:var(--txt);font-size:14px;outline:none;resize:none;font-family:'Nunito Sans',sans-serif;min-height:80px;margin-bottom:10px;}
+.repost-textarea:focus{border-color:var(--acc);}
+.repost-preview{background:var(--surf);border:1px solid var(--bor);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:13px;}
+.repost-preview-author{font-weight:800;color:var(--acc2);margin-bottom:4px;font-size:12px;}
+.repost-preview-text{color:var(--mut);line-height:1.5;}
+
 /* IMAGE VIEWER */
 .img-viewer{position:fixed;inset:0;background:#000;z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;}
 .img-viewer.open{display:flex;}
@@ -962,8 +973,10 @@ function renderPost(post){
   acts.appendChild(cb);
   // Repost
   const rpb=document.createElement('button');rpb.className='ab'+(isRep?' reposted':'');rpb.textContent='🔄 '+reposts.length;
-  rpb.onclick=async()=>{if(isRep){try{await updateDoc(doc(db,'posts',post.id),{reposts:arrayRemove(S.cu.uid)});}catch(e){}return;}if(!confirm('Republicar?'))return;
-    try{await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:'repost',content:post.content,image:post.image||null,privacy:'public',originalUserId:post.userId,originalPostId:post.id,createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});await updateDoc(doc(db,'posts',post.id),{reposts:arrayUnion(S.cu.uid)});await addNotif(post.userId,'repost',post.id);}catch(e){}};
+  rpb.onclick=async()=>{
+    if(isRep){try{await updateDoc(doc(db,'posts',post.id),{reposts:arrayRemove(S.cu.uid)});}catch(e){}return;}
+    openRepostComposer(post);
+  };
   acts.appendChild(rpb);
   // Share
   const shb=document.createElement('button');shb.className='ab';shb.textContent='↗️';shb.onclick=async()=>{const url='https://xelfi.live';const txt=(author.name||'')+' en Xelfi: '+(post.content||'').slice(0,80)+'... '+url;if(navigator.share)try{await navigator.share({title:'Xelfi',text:txt,url});}catch(e){}else try{await navigator.clipboard.writeText(txt);alert('Copiado!');}catch(e){}};acts.appendChild(shb);
@@ -1539,6 +1552,44 @@ function openMundoFrame(){
     const iframe=document.createElement('iframe');iframe.src='mundo-xelfi.html';iframe.style.cssText='flex:1;border:none;width:100%;';
     ov.appendChild(iframe);document.body.appendChild(ov);
   } else ov.style.display='flex';
+}
+
+// REPOST COMPOSER
+function openRepostComposer(post){
+  let ov=document.getElementById('repost-ov');if(ov)ov.remove();
+  ov=document.createElement('div');ov.className='repost-overlay';ov.id='repost-ov';
+  const box=document.createElement('div');box.className='repost-box';
+  // Title
+  const title=document.createElement('div');title.className='repost-title';
+  title.textContent='🔄 Republicar';
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';cl.onclick=()=>ov.remove();title.appendChild(cl);box.appendChild(title);
+  // Text input
+  const ta=document.createElement('textarea');ta.className='repost-textarea';ta.placeholder='Añade un comentario... (opcional)';ta.rows=3;box.appendChild(ta);
+  // Post preview
+  const prev=document.createElement('div');prev.className='repost-preview';
+  const au=S.users[post.userId]||{name:'Usuario',handle:'@usuario'};
+  const pAuth=document.createElement('div');pAuth.className='repost-preview-author';pAuth.textContent=au.name+' '+( au.handle||'');prev.appendChild(pAuth);
+  const pTxt=document.createElement('div');pTxt.className='repost-preview-text';pTxt.textContent=(post.content||'').slice(0,120)+(post.content?.length>120?'...':'');prev.appendChild(pTxt);
+  if(post.image){const pImg=document.createElement('img');pImg.src=post.image;pImg.style.cssText='width:100%;border-radius:8px;margin-top:6px;max-height:120px;object-fit:cover;';prev.appendChild(pImg);}
+  box.appendChild(prev);
+  // Publish button
+  const pb=document.createElement('button');pb.className='btn';pb.style.width='100%';pb.textContent='🔄 Publicar';
+  pb.onclick=async()=>{
+    pb.disabled=true;pb.textContent='Publicando...';
+    try{
+      const txt=ta.value.trim();
+      await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:'repost',content:txt,image:post.image||null,privacy:'public',originalUserId:post.userId,originalPostId:post.id,originalContent:post.content||'',createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});
+      await updateDoc(doc(db,'posts',post.id),{reposts:arrayUnion(S.cu.uid)});
+      await addNotif(post.userId,'repost',post.id);
+      ov.remove();
+    }catch(e){alert('Error: '+e.message);pb.disabled=false;pb.textContent='🔄 Publicar';}
+  };
+  box.appendChild(pb);
+  ov.appendChild(box);
+  ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
+  ov.classList.add('open');
+  setTimeout(()=>ta.focus(),300);
 }
 
 // IMAGE VIEWER
