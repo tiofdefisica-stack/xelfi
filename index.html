@@ -388,7 +388,7 @@ const isFriend=u=>S.friends.includes(u);
 const isBlocked=u=>S.blocked.includes(u);
 const isBlockedBy=u=>S.blockedBy.includes(u);
 const isAdmin=()=>S.me&&S.me.isAdmin===true;
-function canSee(p){if(isBlocked(p.userId)||isBlockedBy(p.userId))return false;if(!p.privacy||p.privacy==='public'||p.privacy==='group'||p.privacy==='page')return true;if(p.userId===S.cu.uid)return true;if(p.privacy==='friends')return isFriend(p.userId);return false;}
+function canSee(p){if(p.isXelfi)return true;if(isBlocked(p.userId)||isBlockedBy(p.userId))return false;if(!p.privacy||p.privacy==='public'||p.privacy==='group'||p.privacy==='page')return true;if(p.userId===S.cu.uid)return true;if(p.privacy==='friends')return isFriend(p.userId);return false;}
 
 function formatText(txt){
   if(!txt)return'';
