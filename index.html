@@ -787,13 +787,14 @@ function renderFeed(){
     if(S.cu&&S.me)S.users[S.cu.uid]=S.me;
     const list=[];
     for(const d of sn.docs){try{const p={id:d.id,...d.data()};if(!S.users[p.userId])await loadU(p.userId);if(canSee(p))list.push(p);}catch(e){}}
-    // Sort: pinned xelfi posts first
-    list.sort((a,b)=>{if(a.isPinned&&!b.isPinned)return -1;if(!a.isPinned&&b.isPinned)return 1;return 0;});
     S.posts=list;
     const con=document.getElementById('pcon');if(!con)return;
     const sy=window.scrollY;con.innerHTML='';
-    if(!list.length){con.innerHTML='<div class="empty">Se el primero en publicar! 🚀</div>';}
-    else list.forEach((p,i)=>{try{if(i>0&&i%5===0)con.appendChild(buildPromo(Math.floor(i/5)-1));const pe=renderPost(p);con.appendChild(pe);if(S.oc[p.id]){pe.appendChild(buildCmts(p));}checkAI(p);}catch(e){}});
+    const pinned=list.filter(p=>p.isPinned&&p.isXelfi);
+    const rest=list.filter(p=>!(p.isPinned&&p.isXelfi));
+    const sorted=[...pinned,...rest];
+    if(!sorted.length){con.innerHTML='<div class="empty">Se el primero en publicar! 🚀</div>';}
+    else sorted.forEach((p,i)=>{try{if(i>0&&i%5===0)con.appendChild(buildPromo(Math.floor(i/5)-1));const pe=renderPost(p);con.appendChild(pe);if(S.oc[p.id]){pe.appendChild(buildCmts(p));}checkAI(p);}catch(e){}});
     requestAnimationFrame(()=>window.scrollTo(0,sy));
   },e=>console.error(e));
   setTimeout(()=>loadSugg(main),500);
@@ -876,6 +877,7 @@ function renderPost(post){
   const author=post.isXelfi
     ? {name:'Xelfi',handle:'@xelfi',avatar:'rocket',photo:''}
     : S.users[post.userId]||{name:'Usuario',handle:'@usuario',avatar:'star'};
+  if(post.isXelfi)card.style.cssText+='border-color:var(--acc);background:linear-gradient(135deg,var(--card),#1c1040);';
   const card=document.createElement('div');card.className='card';card.id='p-'+post.id;
   if(post.type==='repost'&&post.originalUserId){const ou=S.users[post.originalUserId]||{name:'?'};const rb=document.createElement('div');rb.className='rp-banner';rb.innerHTML='🔄 Republicado de ';const bl=document.createElement('b');bl.style.cssText='color:var(--acc2);cursor:pointer;';bl.textContent=ou.name;bl.onclick=()=>{S.pid=post.originalUserId;S.view='profile';render();};rb.appendChild(bl);card.appendChild(rb);}
   const ph=document.createElement('div');ph.className='ph';
