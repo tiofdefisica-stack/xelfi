@@ -438,8 +438,8 @@ function buildRefCard(){
   info.appendChild(nm);info.appendChild(meta);ph.appendChild(av);ph.appendChild(info);card.appendChild(ph);
   // Text
   const refs=S.me?.referrals||0;
-  const txt=document.createElement('p');txt.style.cssText='font-size:14px;line-height:1.6;margin-bottom:8px;';
-  txt.textContent='¿Sabias que puedes ganar 200 XC por cada amigo que invites a Xelfi? '+(refs>0?'Ya has traido '+refs+' amigos y ganado '+(refs*200)+' XC. ':'')+'Comparte tu enlace unico y empieza a ganar 🎁';
+  const txt=document.createElement('p');txt.style.cssText='font-size:15px;line-height:1.6;margin-bottom:8px;';
+  txt.textContent=S.xelfiBanner||('¿Sabias que puedes ganar 200 XC por cada amigo que invites a Xelfi? '+(refs>0?'Ya has traido '+refs+' amigos y ganado '+(refs*200)+' XC. ':'')+'Comparte tu enlace unico y empieza a ganar 🎁');
   card.appendChild(txt);
   // Link
   const link=document.createElement('div');link.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:9px;padding:8px 11px;font-size:11px;color:var(--acc2);font-weight:700;word-break:break-all;margin-bottom:10px;';link.textContent=getRefLink();card.appendChild(link);
@@ -600,7 +600,10 @@ onAuthStateChanged(auth,async u=>{
         setTimeout(()=>showMsg('lmsg','Verifica tu email antes de entrar. Revisa tu bandeja de entrada 📧','err'),300);
         return;
       }
-      S.cu=u;const p=await loadU(u.uid);S.me=p;if(p)S.users[u.uid]=p;await loadFriends();await loadBlocked();S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildGlobalChat(),1000);}
+      S.cu=u;const p=await loadU(u.uid);S.me=p;if(p)S.users[u.uid]=p;await loadFriends();await loadBlocked();
+      // Load xelfi banner
+      try{const bn=await getDoc(doc(db,'config','banner'));if(bn.exists())S.xelfiBanner=bn.data().text;}catch(e){}
+      S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildGlobalChat(),1000);}
     else{S.cu=null;S.me=null;S.view='login';if(unsubN)unsubN();if(unsubP)unsubP();}
     render();
   }catch(err){console.error(err);document.getElementById('app').innerHTML='<div style="padding:40px;text-align:center;color:var(--red);">Error cargando: '+err.message+'</div>';}
@@ -1611,12 +1614,9 @@ function openAdminPanel(){
     b5.onclick=async()=>{
       const txt=document.getElementById('admin-announce-txt').value.trim();if(!txt)return;
       try{
-        // Delete previous pinned xelfi posts
-        const sn=await getDocs(collection(db,'posts'));
-        for(const d of sn.docs){if(d.data().isXelfi&&d.data().isPinned)await deleteDoc(doc(db,'posts',d.id));}
-        // Add new pinned post
-        await addDoc(collection(db,'posts'),{userId:S.cu.uid,isXelfi:true,isPinned:true,content:txt,createdAt:serverTimestamp(),likes:[],reposts:[],comments:[],privacy:'public'});
-        alert('✅ Anuncio publicado!');
+        await setDoc(doc(db,'config','banner'),{text:txt,updatedAt:serverTimestamp()});
+        S.xelfiBanner=txt;
+        alert('✅ Anuncio actualizado en el banner!');
         document.getElementById('admin-announce-txt').value='';
         ov.classList.remove('open');
         S.view='feed';render();
