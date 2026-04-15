@@ -351,27 +351,22 @@ const AVE={star:'⭐',moon:'🌙',scope:'🔭',flower:'🌺',rocket:'🚀',wave:
 const AVK=Object.keys(AVE);
 const em=k=>AVE[k]||k||'⭐';
 
-let _xelfiVoice=null;
-function _loadVoice(){
-  if(_xelfiVoice)return;
-  const voices=window.speechSynthesis?.getVoices()||[];
-  _xelfiVoice=voices.find(v=>v.lang.startsWith('es'))||voices[0]||null;
-}
-if(window.speechSynthesis){
-  window.speechSynthesis.onvoiceschanged=_loadVoice;
-  _loadVoice();
-}
+let _audioCtx=null;
 function playXelfiSound(){
   if(localStorage.getItem('xelfi-sound')==='off')return;
   try{
-    if(!window.speechSynthesis)return;
-    _loadVoice();
-    window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance('¡Xelfi!');
-    u.lang='es-ES';u.pitch=2.0;u.rate=1.4;u.volume=1;
-    if(_xelfiVoice)u.voice=_xelfiVoice;
-    window.speechSynthesis.speak(u);
-  }catch(e){console.error('sound error',e);}
+    if(!_audioCtx)_audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const ctx=_audioCtx;
+    const o=ctx.createOscillator();const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';
+    o.frequency.setValueAtTime(300,ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(600,ctx.currentTime+0.08);
+    o.frequency.exponentialRampToValueAtTime(400,ctx.currentTime+0.15);
+    g.gain.setValueAtTime(0.4,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.25);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.25);
+  }catch(e){}
 }
 
 const REACTIONS=[{k:'like',e:'👍'},{k:'love',e:'❤️'},{k:'haha',e:'😂'},{k:'wow',e:'😲'},{k:'sad',e:'😢'},{k:'angry',e:'😡'}];
@@ -1426,8 +1421,8 @@ async function renderSettings(app){
   const sndRow=document.createElement('div');sndRow.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--bor);';
   const sndIc=document.createElement('span');sndIc.style.fontSize='18px';sndIc.textContent='🔊';
   const sndLb=document.createElement('div');sndLb.style.flex='1';
-  const sndTitle=document.createElement('div');sndTitle.style.cssText='font-weight:700;font-size:14px;';sndTitle.textContent='Sonido en reacciones';
-  const sndDesc=document.createElement('div');sndDesc.style.cssText='font-size:11px;color:var(--mut);';sndDesc.textContent='Voz "¡Xelfi!" al reaccionar';
+  const sndTitle=document.createElement('div');sndTitle.style.cssText='font-weight:700;font-size:14px;';sndTitle.textContent='Sonido al reaccionar';
+  const sndDesc=document.createElement('div');sndDesc.style.cssText='font-size:11px;color:var(--mut);';sndDesc.textContent='Desactivar sonido al reaccionar';
   sndLb.appendChild(sndTitle);sndLb.appendChild(sndDesc);
   const sndTog=document.createElement('div');
   const soundOn=localStorage.getItem('xelfi-sound')!=='off';
