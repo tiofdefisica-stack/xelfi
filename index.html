@@ -351,17 +351,27 @@ const AVE={star:'⭐',moon:'🌙',scope:'🔭',flower:'🌺',rocket:'🚀',wave:
 const AVK=Object.keys(AVE);
 const em=k=>AVE[k]||k||'⭐';
 
+let _xelfiVoice=null;
+function _loadVoice(){
+  if(_xelfiVoice)return;
+  const voices=window.speechSynthesis?.getVoices()||[];
+  _xelfiVoice=voices.find(v=>v.lang.startsWith('es'))||voices[0]||null;
+}
+if(window.speechSynthesis){
+  window.speechSynthesis.onvoiceschanged=_loadVoice;
+  _loadVoice();
+}
 function playXelfiSound(){
   if(localStorage.getItem('xelfi-sound')==='off')return;
   try{
     if(!window.speechSynthesis)return;
+    _loadVoice();
     window.speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance('¡Xelfi!');
-    u.lang='es-ES';u.pitch=2.0;u.rate=1.4;u.volume=0.8;
-    const voices=window.speechSynthesis.getVoices();
-    const sp=voices.find(v=>v.lang.startsWith('es'));if(sp)u.voice=sp;
+    u.lang='es-ES';u.pitch=2.0;u.rate=1.4;u.volume=1;
+    if(_xelfiVoice)u.voice=_xelfiVoice;
     window.speechSynthesis.speak(u);
-  }catch(e){}
+  }catch(e){console.error('sound error',e);}
 }
 
 const REACTIONS=[{k:'like',e:'👍'},{k:'love',e:'❤️'},{k:'haha',e:'😂'},{k:'wow',e:'😲'},{k:'sad',e:'😢'},{k:'angry',e:'😡'}];
