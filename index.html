@@ -1518,8 +1518,7 @@ async function renderStoryReactions(s){
     const reactions=s.reactions||{};
     const REACTS=['👍','❤️','😂','😮','😢','🔥'];
     const totals=REACTS.filter(e=>reactions[e]&&Object.keys(reactions[e]).length>0);
-    const storyComments=s.storyComments||{};
-    const commentList=Object.values(storyComments);
+    const commentList=Array.isArray(s.storyComments)?s.storyComments:[];
     if(totals.length||commentList.length){
       const sum=document.createElement('div');sum.className='story-reactions-summary';
       totals.forEach(e=>{const cnt=Object.keys(reactions[e]||{}).length;const el=document.createElement('div');el.className='story-react-count';el.textContent=e+' '+cnt;sum.appendChild(el);});
@@ -1554,8 +1553,8 @@ async function renderStoryReactions(s){
     const cSend=document.createElement('button');cSend.style.cssText='background:linear-gradient(135deg,#c060ff,#9b35e8);border:none;border-radius:50%;width:34px;height:34px;color:#fff;cursor:pointer;font-size:15px;flex-shrink:0;';cSend.textContent='➤';
     cSend.onclick=async ev=>{ev.stopPropagation();const txt=cInp.value.trim();if(!txt)return;
       try{
-        const upd={};upd['storyComments.'+S.cu.uid]={text:txt,name:S.me?.name||'',avatar:S.me?.avatar||'star',createdAt:new Date().toISOString()};
-        await updateDoc(doc(db,'stories',s.id),upd);
+        await updateDoc(doc(db,'stories',s.id),{storyComments:arrayUnion({uid:S.cu.uid,text:txt,name:S.me?.name||'',avatar:S.me?.avatar||'star',createdAt:new Date().toISOString()})});
+        await addNotif(s.userId,'comment',s.id);
         cInp.value='';cSend.textContent='✓';setTimeout(()=>cSend.textContent='➤',1500);
       }catch(err){console.error(err);}
     };
