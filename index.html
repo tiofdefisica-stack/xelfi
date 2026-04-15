@@ -2391,10 +2391,18 @@ async function loadStoreAds(container){
       const sp=d.data();
       if(sp.isPinned&&sp.isXelfi){
         const pinnedCard=document.createElement('div');pinnedCard.className='store-ad-card';
-        pinnedCard.style.cssText+='border-color:#fbbf24;background:linear-gradient(135deg,var(--card),#2a1f00);';
-        const pinLabel=document.createElement('div');pinLabel.style.cssText='font-size:11px;font-weight:800;color:#fbbf24;margin-bottom:8px;display:flex;align-items:center;gap:4px;font-family:Nunito,sans-serif;';pinLabel.textContent='📌 Anuncio oficial de @xelfi';pinnedCard.appendChild(pinLabel);
-        const pinnedTxt=document.createElement('p');pinnedTxt.style.cssText='font-size:14px;line-height:1.6;color:var(--txt);white-space:pre-wrap;';pinnedTxt.textContent=sp.content||'';pinnedCard.appendChild(pinnedTxt);
-        if(admin){const delP=document.createElement('button');delP.style.cssText='margin-top:10px;background:#ff4d6d22;border:1px solid #ff4d6d44;color:#ff4d6d;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';delP.textContent='🗑️ Borrar anuncio';delP.onclick=async()=>{await deleteDoc(doc(db,'store_posts',d.id));pinnedCard.remove();};pinnedCard.appendChild(delP);}
+        // Header like feed posts
+        const ph2=document.createElement('div');ph2.className='ph';
+        const av2=document.createElement('div');av2.className='av';av2.style.cssText='width:38px;height:38px;flex-shrink:0;';
+        const ximg2=document.createElement('img');ximg2.src=XELFI_LOGO;ximg2.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';av2.appendChild(ximg2);
+        const info2=document.createElement('div');info2.style.flex='1';
+        const nm2=document.createElement('div');nm2.style.cssText='font-weight:800;font-size:14px;font-family:Nunito,sans-serif;display:flex;align-items:center;gap:5px;';nm2.textContent='Xelfi';
+        const vbadge=document.createElement('span');vbadge.style.cssText='background:var(--acc);color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:10px;';vbadge.textContent='✓';nm2.appendChild(vbadge);
+        const meta2=document.createElement('div');meta2.style.cssText='font-size:11px;color:var(--mut);';meta2.textContent='@xelfi';
+        info2.appendChild(nm2);info2.appendChild(meta2);ph2.appendChild(av2);ph2.appendChild(info2);
+        if(admin){const delP=document.createElement('button');delP.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px;';delP.textContent='🗑️';delP.onclick=async()=>{await deleteDoc(doc(db,'store_posts',d.id));pinnedCard.remove();};ph2.appendChild(delP);}
+        pinnedCard.appendChild(ph2);
+        const pinnedTxt=document.createElement('p');pinnedTxt.style.cssText='font-size:15px;line-height:1.65;color:var(--txt);white-space:pre-wrap;margin-top:8px;';pinnedTxt.textContent=sp.content||'';pinnedCard.appendChild(pinnedTxt);
         container.appendChild(pinnedCard);
       }
     });
