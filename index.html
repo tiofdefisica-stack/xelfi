@@ -901,11 +901,11 @@ function renderPost(post){
     const nmText=document.createElement('span');nmText.textContent=author.name;
     if(author.nameGold)nmText.style.color='#fbbf24';
     nm.appendChild(nmText);
-    if(author.verified){const b=document.createElement('span');b.style.cssText='background:var(--acc);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='✓';nm.appendChild(b);}
+    if(author.verified){const b=document.createElement('span');b.style.cssText='background:var(--acc);color:#fff;font-size:11px;font-weight:900;padding:2px 8px;border-radius:10px;line-height:1.4;display:inline-block;';b.textContent='✓';nm.appendChild(b);}
     const ab=author.badges||[];
-    if(ab.includes('vip')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0e0b14;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='VIP';nm.appendChild(b);}
-    if(ab.includes('rugido')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='RUGIDO';nm.appendChild(b);}
-    if(ab.includes('brillante')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='BRILLANTE';nm.appendChild(b);}
+    if(ab.includes('vip')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;font-size:11px;font-weight:900;padding:2px 8px;border-radius:10px;line-height:1.4;display:inline-block;';b.textContent='VIP';nm.appendChild(b);}
+    if(ab.includes('rugido')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:11px;font-weight:900;padding:2px 8px;border-radius:10px;line-height:1.4;display:inline-block;';b.textContent='RUGIDO';nm.appendChild(b);}
+    if(ab.includes('brillante')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:11px;font-weight:900;padding:2px 8px;border-radius:10px;line-height:1.4;display:inline-block;';b.textContent='BRILLANTE';nm.appendChild(b);}
     nm.onclick=()=>{S.pid=post.userId;S.view='profile';render();};
     // Gold name if purchased
     const authorPurchases=author.purchases||{};
