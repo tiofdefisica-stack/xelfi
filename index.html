@@ -941,7 +941,12 @@ function renderPost(post){
     if(goldActive)nmText.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;';const meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--mut);';meta.textContent=(author.handle||'')+' · '+timeAgo(post.createdAt);info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
   }
   const tg=document.createElement('span');tg.className='tag '+(post.privacy==='friends'?'tfri':post.privacy==='private'?'tprv':post.privacy==='group'?'tgrp':'tpub');tg.textContent=post.privacy==='friends'?'👥':post.privacy==='private'?'🔒':post.privacy==='group'?'Grupo':'🌐';ph.appendChild(tg);
-  if(post.userId===S.cu.uid){const del=document.createElement('button');del.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';del.textContent='🗑️';del.onclick=async e=>{e.stopPropagation();if(confirm('Eliminar?'))await deleteDoc(doc(db,'posts',post.id));};ph.appendChild(del);}
+  if(post.userId===S.cu.uid){
+    const editBtn=document.createElement('button');editBtn.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';editBtn.textContent='✏️';
+    editBtn.onclick=async e=>{e.stopPropagation();const newText=prompt('Editar publicación:',post.content||'');if(newText===null)return;if(!newText.trim()){alert('No puede estar vacío.');return;}try{await updateDoc(doc(db,'posts',post.id),{content:newText,edited:true});}catch(err){alert('Error.');}};
+    ph.appendChild(editBtn);
+    const del=document.createElement('button');del.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';del.textContent='🗑️';del.onclick=async e=>{e.stopPropagation();if(confirm('Eliminar?'))await deleteDoc(doc(db,'posts',post.id));};ph.appendChild(del);
+  }
   if(isAdmin()){const fb=document.createElement('button');fb.style.cssText='background:transparent;border:none;cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';fb.textContent=post.featured?'⭐':'☆';fb.onclick=async e=>{e.stopPropagation();await updateDoc(doc(db,'posts',post.id),{featured:!post.featured});};ph.appendChild(fb);
     const shield=document.createElement('button');shield.style.cssText='background:transparent;border:none;cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;color:#ff4d6d;';shield.textContent='🛡️';shield.onclick=e=>{e.stopPropagation();openAdminPostPanel(post,card);};ph.appendChild(shield);}
   card.appendChild(ph);
