@@ -350,6 +350,20 @@ const XELFI_LOGO="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0
 const AVE={star:'⭐',moon:'🌙',scope:'🔭',flower:'🌺',rocket:'🚀',wave:'🌊',fly:'🦋',guitar:'🎸',lab:'🔬',cherry:'🌸',bolt:'⚡',target:'🎯',fox:'🦊',fish:'🐬',palm:'🌴'};
 const AVK=Object.keys(AVE);
 const em=k=>AVE[k]||k||'⭐';
+
+function playXelfiSound(){
+  if(localStorage.getItem('xelfi-sound')==='off')return;
+  try{
+    if(!window.speechSynthesis)return;
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance('¡Xelfi!');
+    u.lang='es-ES';u.pitch=2.0;u.rate=1.4;u.volume=0.8;
+    const voices=window.speechSynthesis.getVoices();
+    const sp=voices.find(v=>v.lang.startsWith('es'));if(sp)u.voice=sp;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
 const REACTIONS=[{k:'like',e:'👍'},{k:'love',e:'❤️'},{k:'haha',e:'😂'},{k:'wow',e:'😲'},{k:'sad',e:'😢'},{k:'angry',e:'😡'}];
 const BADGES=[{id:'welcome',e:'🌱',n:'Bienvenido'},{id:'first_photo',e:'📸',n:'Primera foto'},{id:'conversador',e:'💬',n:'Conversador'},{id:'popular',e:'❤️',n:'Popular'},{id:'social',e:'👥',n:'Social'},{id:'estrella',e:'⭐',n:'Estrella'},{id:'veterano',e:'🎯',n:'Veterano'},{id:'leyenda',e:'🏆',n:'Leyenda'},{id:'vip',e:'💎',n:'VIP'},{id:'rugido',e:'🦁',n:'Rugido'},{id:'brillante',e:'🌟',n:'Brillante'}];
 const STORE=[
