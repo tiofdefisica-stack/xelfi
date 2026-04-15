@@ -439,7 +439,7 @@ function buildRefCard(){
   // Text
   const refs=S.me?.referrals||0;
   const txt=document.createElement('p');txt.style.cssText='font-size:15px;line-height:1.6;margin-bottom:8px;';
-  txt.textContent=S.xelfiBanner||('¿Sabias que puedes ganar 200 XC por cada amigo que invites a Xelfi? '+(refs>0?'Ya has traido '+refs+' amigos y ganado '+(refs*200)+' XC. ':'')+'Comparte tu enlace unico y empieza a ganar 🎁');
+  txt.style.whiteSpace='pre-wrap';txt.textContent=S.xelfiBanner||('¿Sabias que puedes ganar 200 XC por cada amigo que invites a Xelfi? '+(refs>0?'Ya has traido '+refs+' amigos y ganado '+(refs*200)+' XC. ':'')+'Comparte tu enlace unico y empieza a ganar 🎁');
   card.appendChild(txt);
   // Link and share - only show if no custom banner
   if(!S.xelfiBanner){
