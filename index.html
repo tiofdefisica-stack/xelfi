@@ -441,15 +441,16 @@ function buildRefCard(){
   const txt=document.createElement('p');txt.style.cssText='font-size:15px;line-height:1.6;margin-bottom:8px;';
   txt.textContent=S.xelfiBanner||('¿Sabias que puedes ganar 200 XC por cada amigo que invites a Xelfi? '+(refs>0?'Ya has traido '+refs+' amigos y ganado '+(refs*200)+' XC. ':'')+'Comparte tu enlace unico y empieza a ganar 🎁');
   card.appendChild(txt);
-  // Link
-  const link=document.createElement('div');link.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:9px;padding:8px 11px;font-size:11px;color:var(--acc2);font-weight:700;word-break:break-all;margin-bottom:10px;';link.textContent=getRefLink();card.appendChild(link);
-  // Actions
-  const act=document.createElement('div');act.style.cssText='display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--bor);';
-  const cb=document.createElement('button');cb.className='ab';cb.style.cssText='border-color:var(--acc);color:var(--acc2);font-weight:800;';cb.textContent='📋 Copiar enlace';
-  cb.onclick=async()=>{try{await navigator.clipboard.writeText(getRefLink());cb.textContent='✓ Copiado!';setTimeout(()=>cb.textContent='📋 Copiar enlace',2000);}catch(e){alert(getRefLink());}};
-  const sb=document.createElement('button');sb.className='ab';sb.textContent='↗️ Compartir';
-  sb.onclick=async()=>{const t='¡Unete a Xelfi! '+getRefLink();if(navigator.share)try{await navigator.share({title:'Xelfi',text:t,url:getRefLink()});}catch(e){}else{try{await navigator.clipboard.writeText(t);alert('Copiado!');}catch(e){alert(t);}}};
-  act.appendChild(cb);act.appendChild(sb);card.appendChild(act);
+  // Link and share - only show if no custom banner
+  if(!S.xelfiBanner){
+    const link=document.createElement('div');link.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:9px;padding:8px 11px;font-size:11px;color:var(--acc2);font-weight:700;word-break:break-all;margin-bottom:10px;';link.textContent=getRefLink();card.appendChild(link);
+    const act=document.createElement('div');act.style.cssText='display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--bor);';
+    const cb=document.createElement('button');cb.className='ab';cb.style.cssText='border-color:var(--acc);color:var(--acc2);font-weight:800;';cb.textContent='📋 Copiar enlace';
+    cb.onclick=async()=>{try{await navigator.clipboard.writeText(getRefLink());cb.textContent='✓ Copiado!';setTimeout(()=>cb.textContent='📋 Copiar enlace',2000);}catch(e){alert(getRefLink());}};
+    const sb=document.createElement('button');sb.className='ab';sb.textContent='↗️ Compartir';
+    sb.onclick=async()=>{const t='¡Unete a Xelfi! '+getRefLink();if(navigator.share)try{await navigator.share({title:'Xelfi',text:t,url:getRefLink()});}catch(e){}else{try{await navigator.clipboard.writeText(t);alert('Copiado!');}catch(e){alert(t);}}};
+    act.appendChild(cb);act.appendChild(sb);card.appendChild(act);
+  }
   return card;
 }
 async function checkReferral(){
