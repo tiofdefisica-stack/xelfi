@@ -875,10 +875,13 @@ function handleMention(val,box,cb){
 // POST
 function renderPost(post){
   const author=post.isXelfi
-    ? {name:'Xelfi',handle:'@xelfi',avatar:'rocket',photo:''}
+    ? {name:'Xelfi',handle:'@xelfi',avatar:'rocket',photo:'xelfi-coin.png'}
     : S.users[post.userId]||{name:'Usuario',handle:'@usuario',avatar:'star'};
   const card=document.createElement('div');card.className='card';card.id='p-'+post.id;
-  if(post.isXelfi)card.style.cssText+='border-color:var(--acc);background:linear-gradient(135deg,var(--card),#1c1040);';
+  if(post.isXelfi){
+    card.style.cssText+='border-color:var(--acc);background:linear-gradient(135deg,var(--card),#1c1040);';
+    const pin=document.createElement('div');pin.style.cssText='font-size:11px;font-weight:800;color:var(--acc2);margin-bottom:6px;display:flex;align-items:center;gap:4px;';pin.innerHTML='📌 Anuncio de Xelfi';card.appendChild(pin);
+  }
   if(post.type==='repost'&&post.originalUserId){const ou=S.users[post.originalUserId]||{name:'?'};const rb=document.createElement('div');rb.className='rp-banner';rb.innerHTML='🔄 Republicado de ';const bl=document.createElement('b');bl.style.cssText='color:var(--acc2);cursor:pointer;';bl.textContent=ou.name;bl.onclick=()=>{S.pid=post.originalUserId;S.view='profile';render();};rb.appendChild(bl);card.appendChild(rb);}
   const ph=document.createElement('div');ph.className='ph';
   if(post.pageId){
