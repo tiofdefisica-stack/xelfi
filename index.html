@@ -896,14 +896,16 @@ function renderPost(post){
     const info=document.createElement('div');info.style.flex='1';const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:15px;cursor:pointer;font-family:Nunito,sans-serif;';nm.textContent=post.groupName||'Grupo';nm.onclick=()=>{S.groupId=post.groupId;S.view='group';render();};const meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--mut);';meta.textContent=esc(author.name)+' · '+timeAgo(post.createdAt);info.appendChild(nm);info.appendChild(meta);ph.appendChild(info);
   } else {
     const av=avEl(author,44);av.style.cursor='pointer';av.onclick=()=>{S.pid=post.userId;S.view='profile';render();};ph.appendChild(av);
-    const info=document.createElement('div');info.style.cssText='flex:1;min-width:0;';const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:16px;cursor:pointer;font-family:Nunito,sans-serif;display:flex;align-items:center;flex-wrap:wrap;gap:3px;';nm.textContent=author.name;
-    let nmHtml=esc(author.name);
-    if(author.verified)nmHtml+=' <span style="background:var(--acc);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;vertical-align:middle;">✓</span>';
-    const authorBadges=author.badges||[];
-    if(authorBadges.includes('vip'))nmHtml+=' <span style="background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0e0b14;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;vertical-align:middle;">VIP</span>';
-    if(authorBadges.includes('rugido'))nmHtml+=' <span style="background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;vertical-align:middle;">RUGIDO</span>';
-    if(authorBadges.includes('brillante'))nmHtml+=' <span style="background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;vertical-align:middle;">BRILLANTE</span>';
-    nm.innerHTML=nmHtml;
+    const info=document.createElement('div');info.style.cssText='flex:1;min-width:0;';const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:16px;cursor:pointer;font-family:Nunito,sans-serif;display:flex;align-items:center;flex-wrap:wrap;gap:3px;';// Build name with badges using DOM elements
+    nm.innerHTML='';
+    const nmText=document.createElement('span');nmText.textContent=author.name;
+    if(author.nameGold)nmText.style.color='#fbbf24';
+    nm.appendChild(nmText);
+    if(author.verified){const b=document.createElement('span');b.style.cssText='background:var(--acc);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='✓';nm.appendChild(b);}
+    const ab=author.badges||[];
+    if(ab.includes('vip')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0e0b14;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='VIP';nm.appendChild(b);}
+    if(ab.includes('rugido')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='RUGIDO';nm.appendChild(b);}
+    if(ab.includes('brillante')){const b=document.createElement('span');b.style.cssText='background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;';b.textContent='BRILLANTE';nm.appendChild(b);}
     nm.onclick=()=>{S.pid=post.userId;S.view='profile';render();};
     // Gold name if purchased
     const authorPurchases=author.purchases||{};
