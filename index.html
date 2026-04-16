@@ -2363,7 +2363,7 @@ const FAKE_ADS=[
 ];
 
 function buildAdCard(ad, isAdmin){
-  const card=document.createElement('div');card.className='store-ad-card';card.style.cssText+='overflow:hidden;';
+  const card=document.createElement('div');card.className='store-ad-card';card.style.cssText+='overflow:hidden;';card.setAttribute('data-search',(ad.title||'')+' '+(ad.tag||'')+' '+(ad.content||'')+' '+((ad.tags||[]).join(' ')));
   if(isAdmin){
     const adminBar=document.createElement('div');adminBar.style.cssText='display:flex;justify-content:flex-end;gap:6px;margin-bottom:8px;';
     const delBtn=document.createElement('button');delBtn.style.cssText='background:#ff4d6d22;border:1px solid #ff4d6d44;color:#ff4d6d;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';delBtn.textContent='🗑️ Borrar';delBtn.onclick=()=>card.remove();
@@ -2426,10 +2426,11 @@ function openAdDetail(ad){
   // Long description
   if(ad.description){const longDesc=document.createElement('div');longDesc.className='ad-detail-desc';longDesc.style.borderTop='1px solid var(--bor)';longDesc.style.paddingTop='12px';longDesc.textContent=ad.description;content.appendChild(longDesc);}
   // Contact buttons
-  if(ad.phone){const phoneBtn=document.createElement('a');phoneBtn.href='tel:'+ad.phone;phoneBtn.className='ad-contact-btn';phoneBtn.style.background=ad.color||'#9b35e8';phoneBtn.innerHTML='📞 Llamar — '+ad.phone;content.appendChild(phoneBtn);}
-  if(ad.email){const emailBtn=document.createElement('a');emailBtn.href='mailto:'+ad.email;emailBtn.className='ad-contact-btn';emailBtn.style.background='#3b82f6';emailBtn.textContent='📧 Enviar email';content.appendChild(emailBtn);}
-  if(ad.web||ad.url){const webBtn=document.createElement('a');webBtn.href=ad.web||ad.url;webBtn.target='_blank';webBtn.className='ad-contact-btn';webBtn.style.background='#22c55e';webBtn.textContent='🌐 Visitar web';content.appendChild(webBtn);}
-  if(!ad.phone&&!ad.email&&!ad.web&&!ad.url){const noContact=document.createElement('div');noContact.style.cssText='text-align:center;color:var(--mut);font-size:13px;padding:16px;';noContact.textContent='Información de contacto próximamente';content.appendChild(noContact);}
+  if(ad.userId&&ad.userId!==S.cu?.uid){
+    const chatBtn=document.createElement('button');chatBtn.className='ad-contact-btn';chatBtn.style.background='linear-gradient(135deg,#c060ff,#9b35e8)';chatBtn.textContent='💬 Enviar mensaje al anunciante';
+    chatBtn.onclick=()=>{panel.remove();S.chatWith=ad.userId;S.view='chat';render();};
+    content.appendChild(chatBtn);
+  }
   panel.appendChild(content);
   document.body.appendChild(panel);
   setTimeout(()=>panel.classList.add('open'),10);
@@ -2446,8 +2447,7 @@ function openAdForm(container){
     {label:'Categoría *',id:'ad-cat',placeholder:'Ej: Educación, Hostelería, Salud...'},
     {label:'Descripción corta *',id:'ad-desc',placeholder:'Descripción que verán en el feed...',textarea:true},
     {label:'Descripción completa',id:'ad-desc2',placeholder:'Más detalles en la ficha...',textarea:true},
-    {label:'Teléfono de contacto',id:'ad-phone',placeholder:'Ej: +34 600 000 000'},
-    {label:'Email de contacto',id:'ad-email',placeholder:'Ej: negocio@email.com'},
+    {label:'Palabras clave (separadas por comas)',id:'ad-tags',placeholder:'Ej: profesor, inglés, clases particulares'},
   ];
   fields.forEach(f=>{
     const lbl=document.createElement('label');lbl.className='ad-form-label';lbl.textContent=f.label;box.appendChild(lbl);
@@ -2463,14 +2463,14 @@ function openAdForm(container){
   let adImages=[];
   imgInp.onchange=e=>{
     const files=Array.from(e.target.files).slice(0,5);if(!files.length)return;
-    adImages=[];imgPrev.innerHTML='';let loaded=0;
-    files.forEach(f=>{
+    adImages=new Array(files.length);imgPrev.innerHTML='';let loaded=0;
+    files.forEach((f,idx)=>{
       const r=new FileReader();r.onload=ev=>{
         const i=new Image();i.onload=()=>{
           const cv=document.createElement('canvas');const mw=800;const rt=Math.min(1,mw/i.width);
           cv.width=Math.round(i.width*rt);cv.height=Math.round(i.height*rt);
           cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);
-          adImages.push(cv.toDataURL('image/jpeg',0.75));
+          adImages[idx]=cv.toDataURL('image/jpeg',0.75);
           loaded++;
           if(loaded===files.length){
             imgPrev.innerHTML='';
@@ -2492,13 +2492,18 @@ function openAdForm(container){
       await addDoc(collection(db,'ads'),{
         title:name,tag:cat,emoji:'🏪',
         content:desc,description:document.getElementById('ad-desc2').value.trim(),
-        phone:document.getElementById('ad-phone').value.trim(),
-        email:document.getElementById('ad-email').value.trim(),
-        image:adImages[0]||null,images:adImages.length>1?adImages:null,
+        tags:(document.getElementById('ad-tags').value||'').split(',').map(t=>t.trim().toLowerCase()).filter(Boolean),
+        image:adImages[0]||null,images:adImages.length>1?adImages.slice(1):null,
         color:'#9b35e8',
-        createdAt:serverTimestamp(),active:true
+        createdAt:serverTimestamp(),
+        active:isAdmin(),
+        pending:!isAdmin(),
+        userId:S.cu.uid,
+        userName:S.me?.name||''
       });
-      ov.remove();loadStoreAds(container);
+      ov.remove();
+      if(!isAdmin())alert('✅ Tu anuncio se ha enviado para revisión. Aparecerá en el feed cuando sea aprobado.');
+      loadStoreAds(container);
     }catch(e){alert('Error: '+e.message);saveBtn.disabled=false;saveBtn.textContent='Guardar anuncio';}
   };
   box.appendChild(saveBtn);
@@ -2510,6 +2515,11 @@ function openAdForm(container){
 async function loadStoreAds(container){
   container.innerHTML='';
   const admin=isAdmin();
+  // Search bar
+  const searchWrap=document.createElement('div');searchWrap.style.cssText='margin-bottom:12px;position:relative;';
+  const searchInp=document.createElement('input');searchInp.placeholder='🔍 Buscar por nombre o palabras clave...';searchInp.style.cssText='width:100%;background:var(--bg);border:1.5px solid var(--bor);border-radius:12px;padding:10px 14px;color:var(--txt);font-size:14px;outline:none;font-family:Nunito Sans,sans-serif;';
+  searchInp.oninput=()=>{const q=searchInp.value.toLowerCase().trim();document.querySelectorAll('.store-ad-card').forEach(card=>{const txt=(card.getAttribute('data-search')||'').toLowerCase();card.style.display=(!q||txt.includes(q))?'':'none';});};
+  searchWrap.appendChild(searchInp);container.appendChild(searchWrap);
   // Admin toolbar
   if(admin){
     const toolbar=document.createElement('div');toolbar.style.cssText='background:linear-gradient(135deg,#ff4d6d22,#9b35e822);border:1px solid #9b35e844;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
@@ -2518,7 +2528,17 @@ async function loadStoreAds(container){
     // Announce as xelfi button
     const announceBtn=document.createElement('button');announceBtn.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';announceBtn.textContent='📢 Anuncio @xelfi';
     announceBtn.onclick=()=>openStoreAnnouncePanel(container);
-    toolbar.appendChild(lbl);toolbar.appendChild(addBtn);toolbar.appendChild(announceBtn);container.appendChild(toolbar);
+    // Pending ads button
+    const pendingBtn=document.createElement('button');pendingBtn.style.cssText='background:#fbbf2422;border:1px solid #fbbf2444;color:#fbbf24;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';pendingBtn.textContent='⏳ Pendientes';
+    pendingBtn.onclick=async()=>{
+      const sn=await getDocs(query(collection(db,'ads')));
+      const pending=sn.docs.filter(d=>d.data().pending);if(!pending.length){alert('No hay anuncios pendientes.');return;}const names=pending.map(d=>d.data().title).join(', ');if(confirm('Pendientes: '+names+'. Aprobar todos?')){for(const d of pending)await updateDoc(doc(db,'ads',d.id),{active:true,pending:false});loadStoreAds(container);}
+    };
+    toolbar.appendChild(lbl);toolbar.appendChild(addBtn);toolbar.appendChild(pendingBtn);toolbar.appendChild(announceBtn);container.appendChild(toolbar);
+  }
+  // Add ad button for all users
+  if(!admin){
+    const addBtnAll=document.createElement('button');addBtnAll.style.cssText='width:100%;background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;margin-bottom:14px;';addBtnAll.textContent='📢 Publicar mi anuncio';addBtnAll.onclick=()=>openAdForm(container);container.appendChild(addBtnAll);
   }
   // Load pinned store post from Firestore
   try{
