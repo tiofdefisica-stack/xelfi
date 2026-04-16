@@ -96,7 +96,7 @@ textarea{resize:none;line-height:1.5;}
 .msg-bub.theirs{background:var(--surf);border:1px solid var(--bor);}
 .msg-bub.mine{background:linear-gradient(135deg,var(--acc2),var(--acc));color:#fff;}
 .msg-time{font-size:10px;color:var(--mut);text-align:center;padding:2px;}
-.chat-inp{display:flex;gap:6px;align-items:center;padding:9px 0 0;border-top:1px solid var(--bor);}
+.chat-inp{display:flex;gap:6px;align-items:center;padding:9px 0;border-top:1px solid var(--bor);padding-bottom:max(10px,env(safe-area-inset-bottom));}
 .chat-inp input{flex:1;}
 .bnav{position:fixed;bottom:0;left:0;right:0;height:58px;background:var(--card);border-top:1px solid var(--bor);display:flex;align-items:center;justify-content:space-around;z-index:200;}
 .bnav-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;height:100%;background:transparent;border:none;cursor:pointer;color:var(--mut);font-size:20px;padding:0;position:relative;}
@@ -1327,15 +1327,15 @@ async function loadMsgsTab(tab,list){
   list.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);">Cargando...</div>';
   if(tab==='direct'){
     list.innerHTML='';
-    if(!S.friends.length){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);">Agrega amigos para chatear</div>';return;}
+    if(!S.friends||!S.friends.length){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);">Agrega amigos para chatear</div>';return;}
     for(const fuid of S.friends){
       const fu=await loadU(fuid);if(!fu)continue;
       const chatId=[S.cu.uid,fuid].sort().join('_');
       let lastMsg=null;let unread=0;
       try{
         const ms=await getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','desc')));
-        if(!ms.empty){lastMsg=ms.docs[0].data();unread=ms.docs.filter(d=>d.data().to===S.cu.uid&&!d.data().read).length;}
-      }catch(e){}
+        if(ms&&!ms.empty){lastMsg=ms.docs[0].data();unread=ms.docs.filter(d=>d.data().to===S.cu.uid&&!d.data().read).length;}
+      }catch(e){console.warn('chat load error',fuid,e);}
       const row=document.createElement('div');row.className='msgs-row';
       const av=avEl(fu,44);av.style.flexShrink='0';row.appendChild(av);
       const info=document.createElement('div');info.className='msgs-row-info';
@@ -1467,7 +1467,7 @@ async function renderChat(app){
   const wrap=document.createElement('div');const nr=document.createElement('div');nr.className='nav-r';const bk=document.createElement('button');bk.className='nb';bk.textContent='← Mensajes';bk.onclick=()=>{if(unsubChat)unsubChat();S.view='messages';render();};const fi=document.createElement('div');fi.style.cssText='display:flex;align-items:center;gap:6px;';fi.appendChild(avEl(friend,26));const fn=document.createElement('span');fn.style.cssText='font-weight:800;font-size:13px;font-family:Nunito,sans-serif;';fn.textContent=friend.name;fi.appendChild(fn);nr.appendChild(bk);nr.appendChild(fi);wrap.appendChild(makeNav(nr));
   const main=document.createElement('div');main.style.cssText='max-width:600px;margin:0 auto;padding:8px 10px;display:flex;flex-direction:column;height:calc(100vh - 52px);';
   const md=document.createElement('div');md.id='msgs';md.style.cssText='flex:1;overflow-y:auto;';md.innerHTML='<div class="load">Cargando...</div>';
-  const ir=document.createElement('div');ir.className='chat-inp';const ci=document.createElement('input');ci.placeholder='Escribe un mensaje...';ci.value=S.mt||'';ci.oninput=e=>S.mt=e.target.value;ci.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg(chatId);});const sb=document.createElement('button');sb.className='sbtn';sb.textContent='➤';sb.onclick=()=>sendMsg(chatId);ir.appendChild(ci);ir.appendChild(sb);main.appendChild(md);main.appendChild(ir);wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
+  const ir=document.createElement('div');ir.className='chat-inp';ir.style.cssText+='flex-shrink:0;';const ci=document.createElement('input');ci.placeholder='Escribe un mensaje...';ci.value=S.mt||'';ci.oninput=e=>S.mt=e.target.value;ci.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg(chatId);});const sb=document.createElement('button');sb.className='sbtn';sb.textContent='➤';sb.onclick=()=>sendMsg(chatId);ir.appendChild(ci);ir.appendChild(sb);main.appendChild(md);main.appendChild(ir);wrap.appendChild(main);app.innerHTML='';app.appendChild(wrap);
   try{const ms=await getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc')));for(const d of ms.docs){if(d.data().to===S.cu.uid&&!d.data().read)await updateDoc(doc(db,'chats',chatId,'messages',d.id),{read:true});}}catch(e){}
   if(unsubChat)unsubChat();
   unsubChat=onSnapshot(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc')),sn=>{
