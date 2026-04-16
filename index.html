@@ -580,6 +580,19 @@ function buildPromo(idx){
 // NOTIFICATIONS
 let unsubN=null;
 function listenNotifs(uid){if(unsubN)unsubN();try{unsubN=onSnapshot(query(collection(db,'notifications'),orderBy('createdAt','desc')),sn=>{S.notifs=[];sn.forEach(d=>{const n={id:d.id,...d.data()};if(n.toUserId===uid)S.notifs.push(n);});S.unread=S.notifs.filter(n=>!n.read).length;const b=document.getElementById('nbadge');if(b){b.textContent=S.unread;b.style.display=S.unread>0?'flex':'none';}
+      // Update Konekta-t badge - count unread messages
+      setTimeout(async()=>{
+        try{
+          let totalUnread=0;
+          for(const fuid of S.friends||[]){
+            const chatId=[S.cu.uid,fuid].sort().join('_');
+            const ms=await getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','desc')));
+            totalUnread+=ms.docs.filter(d=>d.data().to===S.cu.uid&&!d.data().read).length;
+          }
+          const kb=document.getElementById('konekt-badge');
+          if(kb){kb.textContent=totalUnread;kb.style.display=totalUnread>0?'flex':'none';}
+        }catch(e){}
+      },500);
       const bell=document.querySelector('.nb[textContent="🔔"]')||Array.from(document.querySelectorAll('.nb')).find(el=>el.textContent==='🔔');
       if(bell){if(S.unread>0){bell.classList.add('bell-active');}else{bell.classList.remove('bell-active');bell.style.fontSize='17px';}}});}catch(e){}}
 async function addNotif(to,type,postId,extra){if(!to||to===S.cu.uid)return;try{await addDoc(collection(db,'notifications'),{toUserId:to,type,fromUserId:S.cu.uid,fromName:S.me?.name||'',fromAvatar:S.me?.avatar||'star',postId:postId||null,extra:extra||null,read:false,createdAt:serverTimestamp()});}catch(e){}}
@@ -737,10 +750,16 @@ function render(){
 
 function addBnav(active){
   const nav=document.createElement('div');nav.className='bnav';nav.id='bnav';
-  [{id:'feed',icon:'🏠',lbl:'Inicio'},{id:'search',icon:'🔍',lbl:'Buscar'},{id:'groups',icon:'👥',lbl:'Grupos'},{id:'messages',icon:'💬',lbl:'Chats'},{id:'settings',icon:'⚙️',lbl:'Ajustes'}].forEach(item=>{
+  [{id:'feed',icon:'🏠',lbl:'Inicio'},{id:'search',icon:'🔍',lbl:'Buscar'},{id:'groups',icon:'👥',lbl:'Grupos'},{id:'settings',icon:'⚙️',lbl:'Ajustes'}].forEach(item=>{
     const btn=document.createElement('button');btn.className='bnav-btn'+(active===item.id?' active':'');
     btn.innerHTML=item.icon+'<span>'+item.lbl+'</span>';btn.onclick=()=>{S.view=item.id;render();};nav.appendChild(btn);
-  });document.body.appendChild(nav);
+  });
+  // Konekta-t button
+  const kBtn=document.createElement('button');kBtn.className='bnav-btn bnav-konekt'+(active==='messages'?' active':'');kBtn.id='konekt-btn';
+  kBtn.style.cssText+='position:relative;';
+  kBtn.innerHTML='<div style="position:relative;display:inline-flex;"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 2C6.03 2 2 5.8 2 10.5c0 2.2.88 4.2 2.32 5.7L3 20l4.18-1.5C8.32 19.15 9.63 19.5 11 19.5c4.97 0 9-3.8 9-8.5S15.97 2 11 2z" fill="currentColor" opacity="0.15"/><path d="M11 2C6.03 2 2 5.8 2 10.5c0 2.2.88 4.2 2.32 5.7L3 20l4.18-1.5C8.32 19.15 9.63 19.5 11 19.5c4.97 0 9-3.8 9-8.5S15.97 2 11 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="7.5" cy="10.5" r="1.2" fill="currentColor"/><circle cx="11" cy="10.5" r="1.2" fill="currentColor"/><circle cx="14.5" cy="10.5" r="1.2" fill="currentColor"/></svg><span id="konekt-badge" style="position:absolute;top:-4px;right:-6px;background:#ff4d6d;color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;font-weight:800;display:none;align-items:center;justify-content:center;pointer-events:none;">0</span></div><span>Konekta-t</span>';
+  kBtn.onclick=()=>{S.view='messages';render();};
+  nav.appendChild(kBtn);document.body.appendChild(nav);
 }
 
 // LOGIN
