@@ -2651,6 +2651,7 @@ async function loadStoreAds(container){
   try{
     const adsSn=await getDocs(query(collection(db,'ads'),orderBy('createdAt','desc')));
     adsSn.forEach(d=>{
+      if(!d.data().active)return;
       const ad={id:d.id,...d.data()};
       const card=buildAdCard(ad,admin);
       // Fix Ver más button
