@@ -2615,7 +2615,7 @@ function openProfCardForm(){
   ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
 }
 
-async function openProProfile(userId){
+async function openProProfile(userId,fromMarket){
   try{
     const proDoc=await getDoc(doc(db,'professionals',userId));
     if(!proDoc.exists()){alert('Este usuario no tiene perfil profesional.');return;}
@@ -2642,7 +2642,7 @@ async function openProProfile(userId){
       if(revSn.empty){const empty=document.createElement('div');empty.style.cssText='color:var(--mut);font-size:13px;margin-bottom:16px;';empty.textContent='Aún no hay reseñas.';content.appendChild(empty);}
       else{revSn.forEach(rd=>{const rev=rd.data();const rc=document.createElement('div');rc.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:12px;margin-bottom:10px;';const rTop=document.createElement('div');rTop.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px;';const rName=document.createElement('div');rName.style.cssText='font-weight:700;font-size:13px;flex:1;';rName.textContent=rev.userName||'';const rStars=document.createElement('div');rStars.textContent='⭐'.repeat(rev.stars||0);rTop.appendChild(rName);rTop.appendChild(rStars);rc.appendChild(rTop);if(rev.text){const rt=document.createElement('div');rt.style.cssText='font-size:13px;color:var(--mut);line-height:1.5;';rt.textContent=rev.text;rc.appendChild(rt);}content.appendChild(rc);});}
     }catch(e){}
-    if(S.cu&&S.cu.uid!==userId){
+    if(S.cu&&S.cu.uid!==userId&&fromMarket){
       const revForm=document.createElement('div');revForm.style.cssText='border-top:1px solid var(--bor);padding-top:16px;margin-top:8px;';
       const rft=document.createElement('div');rft.style.cssText='font-weight:700;font-size:14px;margin-bottom:10px;';rft.textContent='Deja tu reseña';revForm.appendChild(rft);
       const starRow=document.createElement('div');starRow.style.cssText='display:flex;gap:4px;margin-bottom:10px;';let selStars=0;
