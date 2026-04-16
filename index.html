@@ -2399,6 +2399,7 @@ function buildAdCard(ad, isAdmin){
   const firstImg=ad.image||(ad.images&&ad.images[0]);if(firstImg){const icoImg=document.createElement('img');icoImg.src=firstImg;icoImg.style.cssText='width:100%;height:100%;object-fit:cover;';ico.appendChild(icoImg);}else{ico.textContent=ad.emoji||'🏪';}
   const info=document.createElement('div');info.style.flex='1';
   const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:15px;font-family:Nunito,sans-serif;';nm.textContent=ad.title;
+  if(ad.userName&&ad.userId){const anLink=document.createElement('div');anLink.style.cssText='font-size:11px;color:var(--acc2);cursor:pointer;font-weight:700;margin-top:2px;';anLink.textContent='👤 '+ad.userName;anLink.onclick=e=>{e.stopPropagation();openProProfile(ad.userId,true);};nm.appendChild(anLink);}
   const badge=document.createElement('div');badge.className='store-ad-badge';badge.textContent=ad.tag;badge.style.cssText+='margin-top:3px;';
   info.appendChild(nm);info.appendChild(badge);hd.appendChild(ico);hd.appendChild(info);card.appendChild(hd);
   // Content
