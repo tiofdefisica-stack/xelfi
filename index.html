@@ -301,6 +301,17 @@ textarea{resize:none;line-height:1.5;}
 .ad-form-input{width:100%;background:var(--bg);border:1.5px solid var(--bor);border-radius:10px;padding:10px 12px;color:var(--txt);font-size:14px;outline:none;font-family:'Nunito Sans',sans-serif;margin-bottom:10px;}
 .ad-form-input:focus{border-color:var(--acc);}
 .ad-form-label{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px;display:block;}
+.mini-chat-panel{position:fixed;bottom:0;left:0;right:0;height:55vh;background:var(--card);border-radius:20px 20px 0 0;border:1px solid var(--bor);z-index:3000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:0 -4px 30px #0004;}
+.mini-chat-panel.open{transform:translateY(0);}
+.mini-chat-header{padding:12px 16px;border-bottom:1px solid var(--bor);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.mini-chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;}
+.mini-chat-msg{max-width:75%;padding:8px 12px;border-radius:14px;font-size:13px;line-height:1.4;}
+.mini-chat-msg.mine{background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;align-self:flex-end;border-bottom-right-radius:4px;}
+.mini-chat-msg.theirs{background:var(--surf);color:var(--txt);align-self:flex-start;border-bottom-left-radius:4px;}
+.mini-chat-input-row{padding:10px 12px;border-top:1px solid var(--bor);display:flex;gap:8px;align-items:center;flex-shrink:0;padding-bottom:max(10px,env(safe-area-inset-bottom));}
+.mini-chat-inp{flex:1;background:var(--bg);border:1.5px solid var(--bor);border-radius:20px;padding:9px 14px;color:var(--txt);font-size:14px;outline:none;font-family:'Nunito Sans',sans-serif;}
+.mini-chat-inp:focus{border-color:var(--acc);}
+.mini-chat-send{background:linear-gradient(135deg,#c060ff,#9b35e8);border:none;border-radius:50%;width:38px;height:38px;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0;}
 .store-bubble{position:fixed;bottom:94px;right:16px;width:54px;height:54px;background:linear-gradient(135deg,#c060ff,#9b35e8);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px #9b35e855;z-index:400;animation:gfloat 3s ease-in-out infinite;}
 .store-bubble:active{transform:scale(.9);}
 .store-feed-panel{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
@@ -2515,6 +2526,51 @@ function openAdForm(container){
   document.body.appendChild(ov);
 }
 
+let miniChatUnsub=null;
+function openMiniChat(toUserId,toName){
+  const chatId=[S.cu.uid,toUserId].sort().join('_');
+  const existing=document.getElementById('mini-chat-panel');if(existing)existing.remove();
+  if(miniChatUnsub){miniChatUnsub();miniChatUnsub=null;}
+  const panel=document.createElement('div');panel.className='mini-chat-panel';panel.id='mini-chat-panel';
+  const toUser=S.users[toUserId]||{name:toName||'Anunciante',avatar:'star'};
+  // Header
+  const hdr=document.createElement('div');hdr.className='mini-chat-header';
+  const av=document.createElement('div');av.className='av';av.style.cssText='width:36px;height:36px;flex-shrink:0;font-size:16px;';
+  if(toUser.photo){const img=document.createElement('img');img.src=toUser.photo;img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%;';av.appendChild(img);}else av.textContent=em(toUser.avatar||'star');
+  const info=document.createElement('div');info.style.flex='1';
+  const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:14px;font-family:Nunito,sans-serif;';nm.textContent=toUser.name||toName||'Anunciante';
+  const sub=document.createElement('div');sub.style.cssText='font-size:11px;color:var(--mut);';sub.textContent='Chat directo';
+  info.appendChild(nm);info.appendChild(sub);
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';
+  cl.onclick=()=>{panel.remove();if(miniChatUnsub){miniChatUnsub();miniChatUnsub=null;}};
+  hdr.appendChild(av);hdr.appendChild(info);hdr.appendChild(cl);panel.appendChild(hdr);
+  // Messages
+  const msgs=document.createElement('div');msgs.className='mini-chat-msgs';
+  panel.appendChild(msgs);
+  // Input
+  const inputRow=document.createElement('div');inputRow.className='mini-chat-input-row';
+  const inp=document.createElement('input');inp.className='mini-chat-inp';inp.placeholder='Escribe un mensaje...';inp.type='text';
+  const sendBtn=document.createElement('button');sendBtn.className='mini-chat-send';sendBtn.textContent='➤';
+  const sendMsg=async()=>{
+    const txt=inp.value.trim();if(!txt)return;inp.value='';
+    try{
+      await addDoc(collection(db,'mini_chats',chatId,'messages'),{from:S.cu.uid,text:txt,createdAt:serverTimestamp()});
+      await setDoc(doc(db,'mini_chats',chatId),{participants:[S.cu.uid,toUserId],lastMsg:txt,updatedAt:serverTimestamp()},{merge:true});
+      await addNotif(toUserId,'message',chatId);
+    }catch(e){console.error('chat error',e);}
+  };
+  sendBtn.onclick=sendMsg;inp.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg();});
+  inputRow.appendChild(inp);inputRow.appendChild(sendBtn);panel.appendChild(inputRow);
+  document.body.appendChild(panel);
+  setTimeout(()=>{panel.classList.add('open');inp.focus();},10);
+  // Listen messages
+  miniChatUnsub=onSnapshot(query(collection(db,'mini_chats',chatId,'messages'),orderBy('createdAt','asc')),sn=>{
+    msgs.innerHTML='';
+    sn.forEach(d=>{const m=d.data();const bubble=document.createElement('div');bubble.className='mini-chat-msg '+(m.from===S.cu.uid?'mine':'theirs');bubble.textContent=m.text;msgs.appendChild(bubble);});
+    msgs.scrollTop=msgs.scrollHeight;
+  });
+}
+
 async function loadStoreAds(container){
   container.innerHTML='';
   const admin=isAdmin();
@@ -2573,15 +2629,18 @@ async function loadStoreAds(container){
     adsSn.forEach(d=>{
       const ad={id:d.id,...d.data()};
       const card=buildAdCard(ad,admin);
-      // Make Ver más open detail
       const btns=card.querySelectorAll('button');
       const lastBtn=btns[btns.length-1];
       if(lastBtn)lastBtn.onclick=()=>openAdDetail(ad);
+      // Fix admin delete to actually delete from Firestore
+      if(admin){
+        const delBtn=card.querySelector('button');
+        if(delBtn&&delBtn.textContent.includes('Borrar'))delBtn.onclick=async()=>{if(confirm('Borrar anuncio?')){await deleteDoc(doc(db,'ads',d.id));card.remove();}};
+      }
       container.appendChild(card);
     });
     if(adsSn.empty){
-      // Show fake ads as examples
-      FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
+      const emptyMsg=document.createElement('div');emptyMsg.style.cssText='text-align:center;padding:40px;color:var(--mut);';emptyMsg.textContent='Aún no hay anuncios. ¡Sé el primero!';container.appendChild(emptyMsg);
     }
   }catch(e){
     FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
