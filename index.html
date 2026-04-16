@@ -2375,7 +2375,7 @@ function buildAdCard(ad, isAdmin){
   // Header
   const hd=document.createElement('div');hd.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;';
   const ico=document.createElement('div');ico.style.cssText='width:70px;height:70px;border-radius:12px;background:'+ad.color+'22;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;border:1px solid '+ad.color+'44;overflow:hidden;';
-  if(ad.image){const icoImg=document.createElement('img');icoImg.src=ad.image;icoImg.style.cssText='width:100%;height:100%;object-fit:cover;';ico.appendChild(icoImg);}else{ico.textContent=ad.emoji||'🏪';}
+  const firstImg=ad.image||(ad.images&&ad.images[0]);if(firstImg){const icoImg=document.createElement('img');icoImg.src=firstImg;icoImg.style.cssText='width:100%;height:100%;object-fit:cover;';ico.appendChild(icoImg);}else{ico.textContent=ad.emoji||'🏪';}
   const info=document.createElement('div');info.style.flex='1';
   const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:15px;font-family:Nunito,sans-serif;';nm.textContent=ad.title;
   const badge=document.createElement('div');badge.className='store-ad-badge';badge.textContent=ad.tag;badge.style.cssText+='margin-top:3px;';
@@ -2395,17 +2395,36 @@ function openAdDetail(ad){
   const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
   const htitle=document.createElement('div');htitle.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;flex:1;';htitle.textContent=ad.title||ad.name||'';
   hdr.appendChild(back);hdr.appendChild(htitle);panel.appendChild(hdr);
-  // Cover
-  const cover=document.createElement('div');cover.className='ad-cover-placeholder';cover.style.cssText+='background:'+ad.color+'22;';cover.textContent=ad.emoji||'🏪';panel.appendChild(cover);
-  // Logo
-  const logoWrap=document.createElement('div');logoWrap.className='ad-logo-wrap';
-  const logo=document.createElement('div');logo.className='ad-logo';logo.style.cssText+='background:'+ad.color+'22;border:3px solid var(--bg);';logo.textContent=ad.emoji||'🏪';
-  logoWrap.appendChild(logo);panel.appendChild(logoWrap);
+  // Image carousel or placeholder
+  const allImgs=ad.images?[ad.image,...ad.images].filter(Boolean):(ad.image?[ad.image]:[]);
+  if(allImgs.length>0){
+    const carouselWrap=document.createElement('div');carouselWrap.style.cssText='position:relative;width:100%;height:220px;overflow:hidden;background:#000;';
+    let carIdx=0;
+    const carImg=document.createElement('img');carImg.src=allImgs[0];carImg.style.cssText='width:100%;height:220px;object-fit:cover;display:block;';carouselWrap.appendChild(carImg);
+    if(allImgs.length>1){
+      const prev=document.createElement('button');prev.style.cssText='position:absolute;left:8px;top:50%;transform:translateY(-50%);background:#000a;border:none;color:#fff;font-size:22px;border-radius:50%;width:36px;height:36px;cursor:pointer;';prev.textContent='‹';
+      const next=document.createElement('button');next.style.cssText='position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#000a;border:none;color:#fff;font-size:22px;border-radius:50%;width:36px;height:36px;cursor:pointer;';next.textContent='›';
+      const dots=document.createElement('div');dots.style.cssText='position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;';
+      allImgs.forEach((_,i)=>{const d=document.createElement('div');d.style.cssText='width:6px;height:6px;border-radius:50%;background:'+(i===0?'#fff':'#ffffff55')+';';dots.appendChild(d);});
+      const updateCar=()=>{carImg.src=allImgs[carIdx];dots.children[carIdx]&&Array.from(dots.children).forEach((d,i)=>d.style.background=i===carIdx?'#fff':'#ffffff55');};
+      prev.onclick=e=>{e.stopPropagation();carIdx=(carIdx-1+allImgs.length)%allImgs.length;updateCar();};
+      next.onclick=e=>{e.stopPropagation();carIdx=(carIdx+1)%allImgs.length;updateCar();};
+      let tx=0;carouselWrap.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+      carouselWrap.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>40){carIdx=(carIdx+(dx<0?1:-1)+allImgs.length)%allImgs.length;updateCar();}},{passive:true});
+      carouselWrap.appendChild(prev);carouselWrap.appendChild(next);carouselWrap.appendChild(dots);
+    }
+    panel.appendChild(carouselWrap);
+  } else {
+    const cover=document.createElement('div');cover.className='ad-cover-placeholder';cover.style.cssText+='background:'+ad.color+'22;';cover.textContent=ad.emoji||'🏪';panel.appendChild(cover);
+  }
   // Content
-  const content=document.createElement('div');content.className='ad-detail-content';
+  const content=document.createElement('div');content.className='ad-detail-content';content.style.paddingTop='16px';
   const name=document.createElement('div');name.className='ad-detail-name';name.textContent=ad.title||ad.name||'';content.appendChild(name);
   const badge=document.createElement('div');badge.className='store-ad-badge';badge.style.marginBottom='12px';badge.textContent=ad.tag||ad.category||'Anunciante';content.appendChild(badge);
-  const desc=document.createElement('div');desc.className='ad-detail-desc';desc.textContent=ad.content||ad.description||'';content.appendChild(desc);
+  // Short description
+  if(ad.content){const shortDesc=document.createElement('div');shortDesc.className='ad-detail-desc';shortDesc.textContent=ad.content;content.appendChild(shortDesc);}
+  // Long description
+  if(ad.description){const longDesc=document.createElement('div');longDesc.className='ad-detail-desc';longDesc.style.borderTop='1px solid var(--bor)';longDesc.style.paddingTop='12px';longDesc.textContent=ad.description;content.appendChild(longDesc);}
   // Contact buttons
   if(ad.phone){const phoneBtn=document.createElement('a');phoneBtn.href='tel:'+ad.phone;phoneBtn.className='ad-contact-btn';phoneBtn.style.background=ad.color||'#9b35e8';phoneBtn.innerHTML='📞 Llamar — '+ad.phone;content.appendChild(phoneBtn);}
   if(ad.email){const emailBtn=document.createElement('a');emailBtn.href='mailto:'+ad.email;emailBtn.className='ad-contact-btn';emailBtn.style.background='#3b82f6';emailBtn.textContent='📧 Enviar email';content.appendChild(emailBtn);}
@@ -2437,12 +2456,30 @@ function openAdForm(container){
     if(f.textarea){inp.rows=3;inp.style.resize='none';}
     box.appendChild(inp);
   });
-  // Image upload
-  const imgLbl=document.createElement('label');imgLbl.className='ad-form-label';imgLbl.textContent='Imagen del anuncio';box.appendChild(imgLbl);
-  const imgPrev=document.createElement('div');imgPrev.id='ad-img-prev';imgPrev.style.cssText='margin-bottom:10px;';box.appendChild(imgPrev);
-  const imgInp=document.createElement('input');imgInp.type='file';imgInp.accept='image/*';imgInp.style.cssText='width:100%;background:var(--bg);border:1.5px dashed var(--bor);border-radius:10px;padding:10px;color:var(--mut);font-size:13px;margin-bottom:10px;';
-  let adImgData='';
-  imgInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const i=new Image();i.onload=()=>{const cv=document.createElement('canvas');const mw=800;const rt=Math.min(1,mw/i.width);cv.width=Math.round(i.width*rt);cv.height=Math.round(i.height*rt);cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);adImgData=cv.toDataURL('image/jpeg',0.75);imgPrev.innerHTML='';const prev=document.createElement('img');prev.src=adImgData;prev.style.cssText='width:100%;border-radius:10px;max-height:160px;object-fit:cover;margin-bottom:6px;';imgPrev.appendChild(prev);};i.src=ev.target.result;};r.readAsDataURL(f);};
+  // Multiple image upload (up to 5)
+  const imgLbl=document.createElement('label');imgLbl.className='ad-form-label';imgLbl.textContent='Imágenes del anuncio (hasta 5)';box.appendChild(imgLbl);
+  const imgPrev=document.createElement('div');imgPrev.id='ad-img-prev';imgPrev.style.cssText='display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;';box.appendChild(imgPrev);
+  const imgInp=document.createElement('input');imgInp.type='file';imgInp.accept='image/*';imgInp.multiple=true;imgInp.style.cssText='width:100%;background:var(--bg);border:1.5px dashed var(--bor);border-radius:10px;padding:10px;color:var(--mut);font-size:13px;margin-bottom:10px;';
+  let adImages=[];
+  imgInp.onchange=e=>{
+    const files=Array.from(e.target.files).slice(0,5);if(!files.length)return;
+    adImages=[];imgPrev.innerHTML='';let loaded=0;
+    files.forEach(f=>{
+      const r=new FileReader();r.onload=ev=>{
+        const i=new Image();i.onload=()=>{
+          const cv=document.createElement('canvas');const mw=800;const rt=Math.min(1,mw/i.width);
+          cv.width=Math.round(i.width*rt);cv.height=Math.round(i.height*rt);
+          cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);
+          adImages.push(cv.toDataURL('image/jpeg',0.75));
+          loaded++;
+          if(loaded===files.length){
+            imgPrev.innerHTML='';
+            adImages.forEach(src=>{const thumb=document.createElement('img');thumb.src=src;thumb.style.cssText='width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--acc);';imgPrev.appendChild(thumb);});
+          }
+        };i.src=ev.target.result;
+      };r.readAsDataURL(f);
+    });
+  };
   box.appendChild(imgInp);
   const saveBtn=document.createElement('button');saveBtn.className='btn';saveBtn.style.width='100%';saveBtn.textContent='Guardar anuncio';
   saveBtn.onclick=async()=>{
@@ -2457,7 +2494,7 @@ function openAdForm(container){
         content:desc,description:document.getElementById('ad-desc2').value.trim(),
         phone:document.getElementById('ad-phone').value.trim(),
         email:document.getElementById('ad-email').value.trim(),
-        image:adImgData||null,
+        image:adImages[0]||null,images:adImages.length>1?adImages:null,
         color:'#9b35e8',
         createdAt:serverTimestamp(),active:true
       });
