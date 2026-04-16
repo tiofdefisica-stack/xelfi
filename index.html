@@ -2629,13 +2629,14 @@ async function loadStoreAds(container){
     adsSn.forEach(d=>{
       const ad={id:d.id,...d.data()};
       const card=buildAdCard(ad,admin);
-      const btns=card.querySelectorAll('button');
-      const lastBtn=btns[btns.length-1];
-      if(lastBtn)lastBtn.onclick=()=>openAdDetail(ad);
-      // Fix admin delete to actually delete from Firestore
+      // Fix Ver más button
+      const allBtns=Array.from(card.querySelectorAll('button'));
+      const verBtn=allBtns.find(b=>b.textContent.includes('información')||b.textContent.includes('Ver'));
+      if(verBtn)verBtn.onclick=()=>openAdDetail(ad);
+      // Fix delete to use Firestore
       if(admin){
-        const delBtn=card.querySelector('button');
-        if(delBtn&&delBtn.textContent.includes('Borrar'))delBtn.onclick=async()=>{if(confirm('Borrar anuncio?')){await deleteDoc(doc(db,'ads',d.id));card.remove();}};
+        const delBtn=allBtns.find(b=>b.textContent.includes('Borrar')||b.textContent.includes('🗑'));
+        if(delBtn)delBtn.onclick=async()=>{if(confirm('Borrar anuncio?')){try{await deleteDoc(doc(db,'ads',d.id));card.remove();}catch(e){alert('Error: '+e.message);}}};
       }
       container.appendChild(card);
     });
