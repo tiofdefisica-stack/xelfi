@@ -2374,7 +2374,8 @@ function buildAdCard(ad, isAdmin){
   const strip=document.createElement('div');strip.style.cssText='height:4px;background:'+ad.color+';border-radius:4px;margin-bottom:12px;';card.appendChild(strip);
   // Header
   const hd=document.createElement('div');hd.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;';
-  const ico=document.createElement('div');ico.style.cssText='width:44px;height:44px;border-radius:12px;background:'+ad.color+'22;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:1px solid '+ad.color+'44;';ico.textContent=ad.emoji;
+  const ico=document.createElement('div');ico.style.cssText='width:70px;height:70px;border-radius:12px;background:'+ad.color+'22;display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;border:1px solid '+ad.color+'44;overflow:hidden;';
+  if(ad.image){const icoImg=document.createElement('img');icoImg.src=ad.image;icoImg.style.cssText='width:100%;height:100%;object-fit:cover;';ico.appendChild(icoImg);}else{ico.textContent=ad.emoji||'🏪';}
   const info=document.createElement('div');info.style.flex='1';
   const nm=document.createElement('div');nm.style.cssText='font-weight:800;font-size:15px;font-family:Nunito,sans-serif;';nm.textContent=ad.title;
   const badge=document.createElement('div');badge.className='store-ad-badge';badge.textContent=ad.tag;badge.style.cssText+='margin-top:3px;';
@@ -2513,8 +2514,9 @@ async function loadStoreAds(container){
       const ad={id:d.id,...d.data()};
       const card=buildAdCard(ad,admin);
       // Make Ver más open detail
-      const btn=card.querySelector('button:last-child');
-      if(btn)btn.onclick=()=>openAdDetail(ad);
+      const btns=card.querySelectorAll('button');
+      const lastBtn=btns[btns.length-1];
+      if(lastBtn)lastBtn.onclick=()=>openAdDetail(ad);
       container.appendChild(card);
     });
     if(adsSn.empty){
