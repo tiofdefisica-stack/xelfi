@@ -2578,6 +2578,85 @@ function openMiniChat(toUserId,toName){
   });
 }
 
+
+async function hasProfCard(){
+  if(!S.cu)return false;
+  try{const d=await getDoc(doc(db,'professionals',S.cu.uid));return d.exists();}catch(e){return false;}
+}
+
+function openProfCardForm(){
+  let ov=document.getElementById('pro-card-ov');if(ov)ov.remove();
+  ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:#000b;z-index:3000;display:flex;align-items:flex-end;justify-content:center;';ov.id='pro-card-ov';
+  const box=document.createElement('div');box.style.cssText='background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));';
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;';title.textContent='🪪 Tarjeta profesional';
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';cl.onclick=()=>ov.remove();title.appendChild(cl);box.appendChild(title);
+  const sub=document.createElement('div');sub.style.cssText='font-size:12px;color:var(--mut);margin-bottom:16px;line-height:1.5;';sub.textContent='Crea tu perfil profesional para poder publicar anuncios en Xelfi Market.';box.appendChild(sub);
+  let proPhotoData='';
+  const photoLbl=document.createElement('label');photoLbl.className='ad-form-label';photoLbl.textContent='Foto profesional';box.appendChild(photoLbl);
+  const photoPrev=document.createElement('div');photoPrev.style.cssText='margin-bottom:10px;display:flex;align-items:center;gap:12px;';
+  const photoCircle=document.createElement('div');photoCircle.style.cssText='width:64px;height:64px;border-radius:50%;border:2px solid var(--acc);background:var(--surf);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden;';photoCircle.textContent='👤';
+  const photoInp=document.createElement('input');photoInp.type='file';photoInp.accept='image/*';photoInp.style.cssText='font-size:13px;color:var(--mut);flex:1;';
+  photoInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const i=new Image();i.onload=()=>{const cv=document.createElement('canvas');cv.width=200;cv.height=200;const ctx2=cv.getContext('2d');const s=Math.min(i.width,i.height);ctx2.drawImage(i,(i.width-s)/2,(i.height-s)/2,s,s,0,0,200,200);proPhotoData=cv.toDataURL('image/jpeg',0.8);photoCircle.innerHTML='';const img=document.createElement('img');img.src=proPhotoData;img.style.cssText='width:100%;height:100%;object-fit:cover;';photoCircle.appendChild(img);};i.src=ev.target.result;};r.readAsDataURL(f);};
+  photoPrev.appendChild(photoCircle);photoPrev.appendChild(photoInp);box.appendChild(photoPrev);
+  const fields=[{label:'Nombre profesional *',id:'pro-name',pl:'Ej: María García'},{label:'Especialidad *',id:'pro-spec',pl:'Ej: Profesora de inglés, Fontanero...'},{label:'Descripción *',id:'pro-bio',pl:'Cuéntanos quién eres y qué ofreces...',ta:true},{label:'Años de experiencia',id:'pro-exp',pl:'Ej: 5 años'},{label:'Zona de trabajo',id:'pro-zone',pl:'Ej: Madrid, Online...'}];
+  fields.forEach(f=>{const lbl=document.createElement('label');lbl.className='ad-form-label';lbl.textContent=f.label;box.appendChild(lbl);const inp=f.ta?document.createElement('textarea'):document.createElement('input');inp.className='ad-form-input';inp.placeholder=f.pl;inp.id=f.id;if(f.ta){inp.rows=3;inp.style.resize='none';}box.appendChild(inp);});
+  const saveBtn=document.createElement('button');saveBtn.className='btn';saveBtn.style.width='100%';saveBtn.textContent='Crear tarjeta profesional';
+  saveBtn.onclick=async()=>{
+    const name=document.getElementById('pro-name').value.trim();const spec=document.getElementById('pro-spec').value.trim();const bio=document.getElementById('pro-bio').value.trim();
+    if(!name||!spec||!bio){alert('Rellena los campos obligatorios (*)');return;}
+    saveBtn.disabled=true;saveBtn.textContent='Guardando...';
+    try{
+      await setDoc(doc(db,'professionals',S.cu.uid),{userId:S.cu.uid,name,specialty:spec,bio,experience:document.getElementById('pro-exp').value.trim(),zone:document.getElementById('pro-zone').value.trim(),photo:proPhotoData||S.me?.photo||'',xelfiHandle:S.me?.handle||'',createdAt:serverTimestamp(),active:true});
+      ov.remove();alert('✅ Tarjeta profesional creada. Ya puedes publicar anuncios.');
+    }catch(e){alert('Error: '+e.message);saveBtn.disabled=false;saveBtn.textContent='Crear tarjeta profesional';}
+  };
+  box.appendChild(saveBtn);
+  const cancelBtn=document.createElement('button');cancelBtn.className='btn-o';cancelBtn.style.cssText='width:100%;margin-top:8px;font-size:13px;';cancelBtn.textContent='Cancelar';cancelBtn.onclick=()=>ov.remove();box.appendChild(cancelBtn);
+  ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
+}
+
+async function openProProfile(userId){
+  try{
+    const proDoc=await getDoc(doc(db,'professionals',userId));
+    if(!proDoc.exists()){alert('Este usuario no tiene perfil profesional.');return;}
+    const pro=proDoc.data();
+    let panel=document.getElementById('pro-profile-panel');if(panel)panel.remove();
+    panel=document.createElement('div');panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2500;display:flex;flex-direction:column;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);';panel.id='pro-profile-panel';
+    const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surf);border-bottom:1px solid var(--bor);position:sticky;top:0;z-index:10;flex-shrink:0;';
+    const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+    const htitle=document.createElement('div');htitle.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;flex:1;';htitle.textContent='Perfil profesional';
+    hdr.appendChild(back);hdr.appendChild(htitle);panel.appendChild(hdr);
+    const content=document.createElement('div');content.style.cssText='padding:20px 16px;';
+    const topRow=document.createElement('div');topRow.style.cssText='display:flex;align-items:center;gap:16px;margin-bottom:16px;';
+    const avWrap=document.createElement('div');avWrap.style.cssText='width:72px;height:72px;border-radius:50%;border:3px solid var(--acc);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--surf);font-size:28px;';
+    if(pro.photo){const img=document.createElement('img');img.src=pro.photo;img.style.cssText='width:100%;height:100%;object-fit:cover;';avWrap.appendChild(img);}else avWrap.textContent='👤';
+    const nameInfo=document.createElement('div');
+    const proName=document.createElement('div');proName.style.cssText='font-weight:900;font-size:18px;font-family:Nunito,sans-serif;';proName.textContent=pro.name;
+    const proSpec=document.createElement('div');proSpec.className='store-ad-badge';proSpec.style.marginTop='4px';proSpec.textContent=pro.specialty;
+    nameInfo.appendChild(proName);nameInfo.appendChild(proSpec);topRow.appendChild(avWrap);topRow.appendChild(nameInfo);content.appendChild(topRow);
+    if(pro.bio){const bio=document.createElement('div');bio.style.cssText='font-size:14px;line-height:1.6;margin-bottom:12px;white-space:pre-wrap;';bio.textContent=pro.bio;content.appendChild(bio);}
+    if(pro.experience||pro.zone){const det=document.createElement('div');det.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;';if(pro.experience){const e=document.createElement('div');e.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:12px;';e.textContent='⏱️ '+pro.experience;det.appendChild(e);}if(pro.zone){const z=document.createElement('div');z.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:8px;padding:5px 10px;font-size:12px;';z.textContent='📍 '+pro.zone;det.appendChild(z);}content.appendChild(det);}
+    const revTitle=document.createElement('div');revTitle.style.cssText='font-weight:800;font-size:15px;font-family:Nunito,sans-serif;margin-bottom:12px;border-top:1px solid var(--bor);padding-top:16px;';revTitle.textContent='⭐ Reseñas';content.appendChild(revTitle);
+    try{
+      const revSn=await getDocs(query(collection(db,'professionals',userId,'reviews'),orderBy('createdAt','desc')));
+      if(revSn.empty){const empty=document.createElement('div');empty.style.cssText='color:var(--mut);font-size:13px;margin-bottom:16px;';empty.textContent='Aún no hay reseñas.';content.appendChild(empty);}
+      else{revSn.forEach(rd=>{const rev=rd.data();const rc=document.createElement('div');rc.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:12px;margin-bottom:10px;';const rTop=document.createElement('div');rTop.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:6px;';const rName=document.createElement('div');rName.style.cssText='font-weight:700;font-size:13px;flex:1;';rName.textContent=rev.userName||'';const rStars=document.createElement('div');rStars.textContent='⭐'.repeat(rev.stars||0);rTop.appendChild(rName);rTop.appendChild(rStars);rc.appendChild(rTop);if(rev.text){const rt=document.createElement('div');rt.style.cssText='font-size:13px;color:var(--mut);line-height:1.5;';rt.textContent=rev.text;rc.appendChild(rt);}content.appendChild(rc);});}
+    }catch(e){}
+    if(S.cu&&S.cu.uid!==userId){
+      const revForm=document.createElement('div');revForm.style.cssText='border-top:1px solid var(--bor);padding-top:16px;margin-top:8px;';
+      const rft=document.createElement('div');rft.style.cssText='font-weight:700;font-size:14px;margin-bottom:10px;';rft.textContent='Deja tu reseña';revForm.appendChild(rft);
+      const starRow=document.createElement('div');starRow.style.cssText='display:flex;gap:4px;margin-bottom:10px;';let selStars=0;
+      for(let i=1;i<=5;i++){const s=document.createElement('span');s.style.cssText='font-size:24px;cursor:pointer;color:#d1d5db;';s.textContent='★';s.onclick=()=>{selStars=i;Array.from(starRow.children).forEach((st,idx2)=>st.style.color=idx2<i?'#fbbf24':'#d1d5db');};starRow.appendChild(s);}
+      revForm.appendChild(starRow);
+      const revInp=document.createElement('textarea');revInp.className='ad-form-input';revInp.placeholder='Escribe tu reseña...';revInp.rows=3;revInp.style.resize='none';revForm.appendChild(revInp);
+      const revSend=document.createElement('button');revSend.className='btn';revSend.style.cssText='width:100%;margin-top:8px;';revSend.textContent='Publicar reseña';
+      revSend.onclick=async()=>{if(!selStars){alert('Selecciona una puntuación.');return;}revSend.disabled=true;revSend.textContent='Publicando...';try{await addDoc(collection(db,'professionals',userId,'reviews'),{userId:S.cu.uid,userName:S.me?.name||'',stars:selStars,text:revInp.value.trim(),createdAt:serverTimestamp()});revSend.textContent='✅ Reseña publicada';setTimeout(()=>{revSend.disabled=false;revSend.textContent='Publicar reseña';},2000);}catch(e){alert('Error.');revSend.disabled=false;revSend.textContent='Publicar reseña';}};
+      revForm.appendChild(revSend);content.appendChild(revForm);
+    }
+    panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.style.transform='translateY(0)',10);
+  }catch(e){alert('Error cargando perfil: '+e.message);}
+}
+
 async function loadStoreAds(container){
   container.innerHTML='';
   const admin=isAdmin();
@@ -2628,7 +2707,21 @@ async function loadStoreAds(container){
   }
   // Add ad button for all users
   if(!admin){
-    const addBtnAll=document.createElement('button');addBtnAll.style.cssText='width:100%;background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;margin-bottom:14px;';addBtnAll.textContent='📢 Publicar mi anuncio';addBtnAll.onclick=()=>openAdForm(container);container.appendChild(addBtnAll);
+    const btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px;margin-bottom:14px;';
+    const addBtnAll=document.createElement('button');addBtnAll.style.cssText='flex:1;background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';addBtnAll.textContent='📢 Publicar anuncio';
+    addBtnAll.onclick=async()=>{
+      const hasPro=await hasProfCard();
+      if(!hasPro){
+        const msg=document.createElement('div');msg.style.cssText='background:#ff4d6d22;border:1px solid #ff4d6d44;border-radius:12px;padding:14px;margin-bottom:10px;text-align:center;';
+        msg.innerHTML='<div style="font-weight:800;color:#ff4d6d;margin-bottom:8px;">Necesitas una tarjeta profesional para publicar</div>';
+        const goBtn=document.createElement('button');goBtn.className='btn';goBtn.style.cssText='font-size:13px;';goBtn.textContent='🪪 Crear tarjeta profesional';goBtn.onclick=()=>{msg.remove();openProfCardForm();};
+        msg.appendChild(goBtn);container.insertBefore(msg,container.firstChild);return;
+      }
+      openAdForm(container);
+    };
+    const proCardBtn=document.createElement('button');proCardBtn.style.cssText='flex:1;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';proCardBtn.textContent='🪪 Mi tarjeta pro';
+    proCardBtn.onclick=async()=>{const hasPro=await hasProfCard();if(hasPro)openProProfile(S.cu.uid);else openProfCardForm();};
+    btnRow.appendChild(addBtnAll);btnRow.appendChild(proCardBtn);container.appendChild(btnRow);
   }
   // Load pinned store post from Firestore
   try{
