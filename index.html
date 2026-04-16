@@ -2424,13 +2424,10 @@ function openAdForm(container){
   const fields=[
     {label:'Nombre del negocio *',id:'ad-name',placeholder:'Ej: Clases de inglés con María'},
     {label:'Categoría *',id:'ad-cat',placeholder:'Ej: Educación, Hostelería, Salud...'},
-    {label:'Emoji representativo',id:'ad-emoji',placeholder:'Ej: 📚'},
     {label:'Descripción corta *',id:'ad-desc',placeholder:'Descripción que verán en el feed...',textarea:true},
     {label:'Descripción completa',id:'ad-desc2',placeholder:'Más detalles en la ficha...',textarea:true},
     {label:'Teléfono de contacto',id:'ad-phone',placeholder:'Ej: +34 600 000 000'},
     {label:'Email de contacto',id:'ad-email',placeholder:'Ej: negocio@email.com'},
-    {label:'Web',id:'ad-web',placeholder:'Ej: https://minegocio.com'},
-    {label:'Color (hex)',id:'ad-color',placeholder:'Ej: #9b35e8'},
   ];
   fields.forEach(f=>{
     const lbl=document.createElement('label');lbl.className='ad-form-label';lbl.textContent=f.label;box.appendChild(lbl);
@@ -2439,6 +2436,13 @@ function openAdForm(container){
     if(f.textarea){inp.rows=3;inp.style.resize='none';}
     box.appendChild(inp);
   });
+  // Image upload
+  const imgLbl=document.createElement('label');imgLbl.className='ad-form-label';imgLbl.textContent='Imagen del anuncio';box.appendChild(imgLbl);
+  const imgPrev=document.createElement('div');imgPrev.id='ad-img-prev';imgPrev.style.cssText='margin-bottom:10px;';box.appendChild(imgPrev);
+  const imgInp=document.createElement('input');imgInp.type='file';imgInp.accept='image/*';imgInp.style.cssText='width:100%;background:var(--bg);border:1.5px dashed var(--bor);border-radius:10px;padding:10px;color:var(--mut);font-size:13px;margin-bottom:10px;';
+  let adImgData='';
+  imgInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const i=new Image();i.onload=()=>{const cv=document.createElement('canvas');const mw=800;const rt=Math.min(1,mw/i.width);cv.width=Math.round(i.width*rt);cv.height=Math.round(i.height*rt);cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);adImgData=cv.toDataURL('image/jpeg',0.75);imgPrev.innerHTML='';const prev=document.createElement('img');prev.src=adImgData;prev.style.cssText='width:100%;border-radius:10px;max-height:160px;object-fit:cover;margin-bottom:6px;';imgPrev.appendChild(prev);};i.src=ev.target.result;};r.readAsDataURL(f);};
+  box.appendChild(imgInp);
   const saveBtn=document.createElement('button');saveBtn.className='btn';saveBtn.style.width='100%';saveBtn.textContent='Guardar anuncio';
   saveBtn.onclick=async()=>{
     const name=document.getElementById('ad-name').value.trim();
@@ -2448,12 +2452,12 @@ function openAdForm(container){
     saveBtn.disabled=true;saveBtn.textContent='Guardando...';
     try{
       await addDoc(collection(db,'ads'),{
-        title:name,tag:cat,emoji:document.getElementById('ad-emoji').value.trim()||'🏪',
+        title:name,tag:cat,emoji:'🏪',
         content:desc,description:document.getElementById('ad-desc2').value.trim(),
         phone:document.getElementById('ad-phone').value.trim(),
         email:document.getElementById('ad-email').value.trim(),
-        web:document.getElementById('ad-web').value.trim(),
-        color:document.getElementById('ad-color').value.trim()||'#9b35e8',
+        image:adImgData||null,
+        color:'#9b35e8',
         createdAt:serverTimestamp(),active:true
       });
       ov.remove();loadStoreAds(container);
