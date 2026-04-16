@@ -286,6 +286,21 @@ textarea{resize:none;line-height:1.5;}
 .mgame-result-box{background:var(--card);border:2px solid var(--acc);border-radius:20px;padding:26px 22px;text-align:center;max-width:290px;width:90%;}
 
 /* GLOBAL CHAT */
+.ad-detail-panel{position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;}
+.ad-detail-panel.open{transform:translateY(0);}
+.ad-cover{width:100%;height:180px;object-fit:cover;display:block;}
+.ad-cover-placeholder{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:60px;}
+.ad-logo-wrap{position:relative;margin:-36px 0 0 16px;margin-bottom:10px;}
+.ad-logo{width:72px;height:72px;border-radius:16px;border:3px solid var(--bg);object-fit:cover;background:var(--surf);display:flex;align-items:center;justify-content:center;font-size:32px;}
+.ad-detail-content{padding:0 16px 30px;}
+.ad-detail-name{font-size:20px;font-weight:900;font-family:Nunito,sans-serif;margin-bottom:4px;}
+.ad-detail-desc{font-size:14px;color:var(--mut);line-height:1.6;margin-bottom:16px;white-space:pre-wrap;}
+.ad-contact-btn{width:100%;padding:13px;border:none;border-radius:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;color:#fff;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.ad-form-overlay{position:fixed;inset:0;background:#000b;z-index:3000;display:flex;align-items:flex-end;justify-content:center;}
+.ad-form-box{background:var(--card);border:2px solid var(--bor);border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto;}
+.ad-form-input{width:100%;background:var(--bg);border:1.5px solid var(--bor);border-radius:10px;padding:10px 12px;color:var(--txt);font-size:14px;outline:none;font-family:'Nunito Sans',sans-serif;margin-bottom:10px;}
+.ad-form-input:focus{border-color:var(--acc);}
+.ad-form-label{font-size:12px;font-weight:700;color:var(--mut);margin-bottom:4px;display:block;}
 .store-bubble{position:fixed;bottom:94px;right:16px;width:54px;height:54px;background:linear-gradient(135deg,#c060ff,#9b35e8);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px #9b35e855;z-index:400;animation:gfloat 3s ease-in-out infinite;}
 .store-bubble:active{transform:scale(.9);}
 .store-feed-panel{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
@@ -2371,6 +2386,85 @@ function buildAdCard(ad, isAdmin){
   return card;
 }
 
+function openAdDetail(ad){
+  let panel=document.getElementById('ad-detail-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.className='ad-detail-panel';panel.id='ad-detail-panel';
+  // Header with back button
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surf);border-bottom:1px solid var(--bor);position:sticky;top:0;z-index:10;flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const htitle=document.createElement('div');htitle.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;flex:1;';htitle.textContent=ad.title||ad.name||'';
+  hdr.appendChild(back);hdr.appendChild(htitle);panel.appendChild(hdr);
+  // Cover
+  const cover=document.createElement('div');cover.className='ad-cover-placeholder';cover.style.cssText+='background:'+ad.color+'22;';cover.textContent=ad.emoji||'🏪';panel.appendChild(cover);
+  // Logo
+  const logoWrap=document.createElement('div');logoWrap.className='ad-logo-wrap';
+  const logo=document.createElement('div');logo.className='ad-logo';logo.style.cssText+='background:'+ad.color+'22;border:3px solid var(--bg);';logo.textContent=ad.emoji||'🏪';
+  logoWrap.appendChild(logo);panel.appendChild(logoWrap);
+  // Content
+  const content=document.createElement('div');content.className='ad-detail-content';
+  const name=document.createElement('div');name.className='ad-detail-name';name.textContent=ad.title||ad.name||'';content.appendChild(name);
+  const badge=document.createElement('div');badge.className='store-ad-badge';badge.style.marginBottom='12px';badge.textContent=ad.tag||ad.category||'Anunciante';content.appendChild(badge);
+  const desc=document.createElement('div');desc.className='ad-detail-desc';desc.textContent=ad.content||ad.description||'';content.appendChild(desc);
+  // Contact buttons
+  if(ad.phone){const phoneBtn=document.createElement('a');phoneBtn.href='tel:'+ad.phone;phoneBtn.className='ad-contact-btn';phoneBtn.style.background=ad.color||'#9b35e8';phoneBtn.innerHTML='📞 Llamar — '+ad.phone;content.appendChild(phoneBtn);}
+  if(ad.email){const emailBtn=document.createElement('a');emailBtn.href='mailto:'+ad.email;emailBtn.className='ad-contact-btn';emailBtn.style.background='#3b82f6';emailBtn.textContent='📧 Enviar email';content.appendChild(emailBtn);}
+  if(ad.web||ad.url){const webBtn=document.createElement('a');webBtn.href=ad.web||ad.url;webBtn.target='_blank';webBtn.className='ad-contact-btn';webBtn.style.background='#22c55e';webBtn.textContent='🌐 Visitar web';content.appendChild(webBtn);}
+  if(!ad.phone&&!ad.email&&!ad.web&&!ad.url){const noContact=document.createElement('div');noContact.style.cssText='text-align:center;color:var(--mut);font-size:13px;padding:16px;';noContact.textContent='Información de contacto próximamente';content.appendChild(noContact);}
+  panel.appendChild(content);
+  document.body.appendChild(panel);
+  setTimeout(()=>panel.classList.add('open'),10);
+}
+
+function openAdForm(container){
+  let ov=document.getElementById('ad-form-ov');if(ov)ov.remove();
+  ov=document.createElement('div');ov.className='ad-form-overlay';ov.id='ad-form-ov';
+  const box=document.createElement('div');box.className='ad-form-box';
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;';title.innerHTML='➕ Nuevo anuncio';
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';cl.onclick=()=>ov.remove();title.appendChild(cl);box.appendChild(title);
+  const fields=[
+    {label:'Nombre del negocio *',id:'ad-name',placeholder:'Ej: Clases de inglés con María'},
+    {label:'Categoría *',id:'ad-cat',placeholder:'Ej: Educación, Hostelería, Salud...'},
+    {label:'Emoji representativo',id:'ad-emoji',placeholder:'Ej: 📚'},
+    {label:'Descripción corta *',id:'ad-desc',placeholder:'Descripción que verán en el feed...',textarea:true},
+    {label:'Descripción completa',id:'ad-desc2',placeholder:'Más detalles en la ficha...',textarea:true},
+    {label:'Teléfono de contacto',id:'ad-phone',placeholder:'Ej: +34 600 000 000'},
+    {label:'Email de contacto',id:'ad-email',placeholder:'Ej: negocio@email.com'},
+    {label:'Web',id:'ad-web',placeholder:'Ej: https://minegocio.com'},
+    {label:'Color (hex)',id:'ad-color',placeholder:'Ej: #9b35e8'},
+  ];
+  fields.forEach(f=>{
+    const lbl=document.createElement('label');lbl.className='ad-form-label';lbl.textContent=f.label;box.appendChild(lbl);
+    const inp=f.textarea?document.createElement('textarea'):document.createElement('input');
+    inp.className='ad-form-input';inp.placeholder=f.placeholder;inp.id=f.id;
+    if(f.textarea){inp.rows=3;inp.style.resize='none';}
+    box.appendChild(inp);
+  });
+  const saveBtn=document.createElement('button');saveBtn.className='btn';saveBtn.style.width='100%';saveBtn.textContent='Guardar anuncio';
+  saveBtn.onclick=async()=>{
+    const name=document.getElementById('ad-name').value.trim();
+    const cat=document.getElementById('ad-cat').value.trim();
+    const desc=document.getElementById('ad-desc').value.trim();
+    if(!name||!cat||!desc){alert('Rellena los campos obligatorios (*)');return;}
+    saveBtn.disabled=true;saveBtn.textContent='Guardando...';
+    try{
+      await addDoc(collection(db,'ads'),{
+        title:name,tag:cat,emoji:document.getElementById('ad-emoji').value.trim()||'🏪',
+        content:desc,description:document.getElementById('ad-desc2').value.trim(),
+        phone:document.getElementById('ad-phone').value.trim(),
+        email:document.getElementById('ad-email').value.trim(),
+        web:document.getElementById('ad-web').value.trim(),
+        color:document.getElementById('ad-color').value.trim()||'#9b35e8',
+        createdAt:serverTimestamp(),active:true
+      });
+      ov.remove();loadStoreAds(container);
+    }catch(e){alert('Error: '+e.message);saveBtn.disabled=false;saveBtn.textContent='Guardar anuncio';}
+  };
+  box.appendChild(saveBtn);
+  const cancelBtn=document.createElement('button');cancelBtn.className='btn-o';cancelBtn.style.cssText='width:100%;margin-top:8px;font-size:13px;';cancelBtn.textContent='Cancelar';cancelBtn.onclick=()=>ov.remove();box.appendChild(cancelBtn);
+  ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
+}
+
 async function loadStoreAds(container){
   container.innerHTML='';
   const admin=isAdmin();
@@ -2378,7 +2472,7 @@ async function loadStoreAds(container){
   if(admin){
     const toolbar=document.createElement('div');toolbar.style.cssText='background:linear-gradient(135deg,#ff4d6d22,#9b35e822);border:1px solid #9b35e844;border-radius:12px;padding:10px 14px;margin-bottom:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;';
     const lbl=document.createElement('div');lbl.style.cssText='font-weight:800;font-size:13px;font-family:Nunito,sans-serif;color:var(--acc2);flex:1;';lbl.textContent='🛡️ Panel de anuncios';
-    const addBtn=document.createElement('button');addBtn.style.cssText='background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';addBtn.textContent='+ Añadir anuncio';addBtn.onclick=()=>alert('Próximamente: formulario para añadir anuncio real');
+    const addBtn=document.createElement('button');addBtn.style.cssText='background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';addBtn.textContent='+ Añadir anuncio';addBtn.onclick=()=>openAdForm(container);
     // Announce as xelfi button
     const announceBtn=document.createElement('button');announceBtn.style.cssText='background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';announceBtn.textContent='📢 Anuncio @xelfi';
     announceBtn.onclick=()=>openStoreAnnouncePanel(container);
@@ -2402,13 +2496,30 @@ async function loadStoreAds(container){
         info2.appendChild(nm2);info2.appendChild(meta2);ph2.appendChild(av2);ph2.appendChild(info2);
         if(admin){const delP=document.createElement('button');delP.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:13px;padding:2px 4px;';delP.textContent='🗑️';delP.onclick=async()=>{await deleteDoc(doc(db,'store_posts',d.id));pinnedCard.remove();};ph2.appendChild(delP);}
         pinnedCard.appendChild(ph2);
-        const pinnedTxt=document.createElement('p');pinnedTxt.style.cssText='font-size:15px;line-height:1.65;color:var(--txt);white-space:pre-wrap;margin-top:8px;';pinnedTxt.textContent=sp.content||'';pinnedCard.appendChild(pinnedTxt);
+        const pinnedTxt=document.createElement('p');pinnedTxt.style.cssText='font-size:15px;line-height:1.65;color:var(--txt);white-space:pre-wrap;margin-top:8px;margin-bottom:12px;';pinnedTxt.textContent=sp.content||'';pinnedCard.appendChild(pinnedTxt);
+        const emailBtn=document.createElement('a');emailBtn.href='mailto:tiofdefisica@gmail.com?subject=Contacto desde Xelfi';emailBtn.style.cssText='display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:12px;background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;font-size:14px;font-weight:800;text-decoration:none;font-family:Nunito,sans-serif;';emailBtn.textContent='📧 Contactar con Xelfi';pinnedCard.appendChild(emailBtn);
         container.appendChild(pinnedCard);
       }
     });
   }catch(e){}
-  // Fake ads
-  FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
+  // Real ads from Firestore
+  try{
+    const adsSn=await getDocs(query(collection(db,'ads'),orderBy('createdAt','desc')));
+    adsSn.forEach(d=>{
+      const ad={id:d.id,...d.data()};
+      const card=buildAdCard(ad,admin);
+      // Make Ver más open detail
+      const btn=card.querySelector('button:last-child');
+      if(btn)btn.onclick=()=>openAdDetail(ad);
+      container.appendChild(card);
+    });
+    if(adsSn.empty){
+      // Show fake ads as examples
+      FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
+    }
+  }catch(e){
+    FAKE_ADS.forEach(ad=>container.appendChild(buildAdCard(ad,admin)));
+  }
 }
 
 // GLOBAL CHAT
