@@ -570,6 +570,9 @@ function renderNotifPanel(){
       if(n.postId&&['like','comment','repost'].includes(n.type)){
         S.view='feed';render();
         setTimeout(()=>{const el=document.getElementById('p-'+n.postId);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},600);
+      } else if(n.type==='message'&&n.postId){
+        const p=document.getElementById('npanel');if(p)p.remove();
+        openMiniChat(n.fromUserId,n.fromName||'Anunciante');
       } else if(n.fromUserId&&['facc','freq','tip','gift','referral'].includes(n.type)){
         S.pid=n.fromUserId;S.view='profile';render();
       } else if(['gjoin','gjoined'].includes(n.type)){
