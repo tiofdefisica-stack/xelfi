@@ -2442,7 +2442,7 @@ function openAdDetail(ad){
   // Contact buttons
   if(ad.userId&&ad.userId!==S.cu?.uid){
     const chatBtn=document.createElement('button');chatBtn.className='ad-contact-btn';chatBtn.style.background='linear-gradient(135deg,#c060ff,#9b35e8)';chatBtn.textContent='💬 Enviar mensaje al anunciante';
-    chatBtn.onclick=()=>{panel.remove();S.chatWith=ad.userId;S.view='chat';render();};
+    chatBtn.onclick=e=>{e.stopPropagation();openMiniChat(ad.userId,ad.title||ad.name||'Anunciante');};
     content.appendChild(chatBtn);
   }
   panel.appendChild(content);
