@@ -3374,7 +3374,14 @@ async function openSinglePost(postId){
     const post={id:postDoc.id,...postDoc.data()};
     if(!S.users[post.userId])await loadU(post.userId);
     content.innerHTML='';
-    content.appendChild(renderPost(post));
+    const postCard=renderPost(post);
+    content.appendChild(postCard);
+    // Auto-expand comments
+    const cmtBtn=postCard.querySelector('.act-row button[data-action="comment"]')||
+      Array.from(postCard.querySelectorAll('.act-row button')).find(b=>b.textContent.includes('💬'));
+    if(cmtBtn)cmtBtn.click();
+    // Scroll to comments after render
+    setTimeout(()=>{const cmtSection=postCard.querySelector('.comments-section');if(cmtSection)cmtSection.scrollIntoView({behavior:'smooth',block:'start'});},400);
   }catch(e){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Error cargando post</div>';}
 }
 
