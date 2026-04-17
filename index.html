@@ -1269,6 +1269,10 @@ async function renderProf(app){
 
   const phn=document.createElement('div');phn.style.cssText='color:var(--mut);font-size:12px;margin-bottom:5px;';phn.textContent=prof.handle||'';
   const pbio=document.createElement('div');pbio.style.cssText='font-size:13px;margin-bottom:6px;line-height:1.4;';pbio.textContent=prof.bio||'Sin biografia';
+  // Health bar - show for own profile and admin viewing others
+  if(isOwnCheck||isAdmin()){
+    const hbar=buildHealthBar(prof.infractions||0);hbar.style.margin='8px 0';main.appendChild(hbar);
+  }
   const pts=prof.points||0;const xcoins=prof.xcoins||0;
   const lvlD=document.createElement('div');lvlD.style.cssText='display:inline-block;background:#9b35e818;border:1px solid #9b35e833;border-radius:16px;padding:2px 9px;font-size:11px;font-weight:800;font-family:Nunito,sans-serif;color:var(--acc2);margin-bottom:5px;';lvlD.textContent=getLevel(pts)+' · '+pts+' pts';
   const xcRow=document.createElement('div');xcRow.style.cssText='display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,#1a0a2e,#2d0a4e);border-radius:10px;padding:7px 10px;margin-bottom:6px;cursor:pointer;';xcRow.appendChild(coinImg(22));const xcInf=document.createElement('div');xcInf.innerHTML='<div style="font-size:15px;font-weight:900;color:#fbbf24;font-family:Nunito,sans-serif;">'+xcoins+' XC</div><div style="font-size:10px;color:#7a6a9a;">Xelfi Coins</div>';xcRow.appendChild(xcInf);if(isOwn){const shopB=document.createElement('button');shopB.className='btn';shopB.style.cssText='margin-left:auto;font-size:11px;padding:5px 10px;';shopB.textContent='🛍️ Tienda';shopB.onclick=()=>{S.view='store';render();};xcRow.appendChild(shopB);
