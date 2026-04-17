@@ -416,13 +416,10 @@ textarea{resize:none;line-height:1.5;}
 .gep:active{background:var(--bor);}
 </style>
 <script>
-// Restore theme immediately before page renders
-var t=localStorage.getItem('xelfi-theme');
-if(t==='dark'){document.documentElement.style.colorScheme='dark';}
-else{document.body.classList.add('light');}
+if(localStorage.getItem('xelfi-theme')==='dark'){document.addEventListener('DOMContentLoaded',()=>document.body.classList.remove('light'));}
 </script>
 </head>
-<body>
+<body class="light">
 <div id="app"><div class="load" style="padding:80px;font-size:16px;text-align:center;">Cargando Xelfi...</div></div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
