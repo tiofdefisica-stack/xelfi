@@ -1689,6 +1689,15 @@ async function sendMsg(chatId){
     await setDoc(doc(db,'chats',chatId),{participants:[S.cu.uid,S.chatWith],updatedAt:serverTimestamp()},{merge:true});
     await addDoc(collection(db,'chats',chatId,'messages'),{from:S.cu.uid,to:S.chatWith,text,createdAt:serverTimestamp(),read:false});
     await addNotif(S.chatWith,'message',chatId);
+    // Force refresh messages if onSnapshot not updating
+    setTimeout(()=>{
+      const msgEl=document.getElementById('msgs');
+      if(msgEl&&msgEl.innerHTML.includes('Empieza la conversación')){
+        getDocs(query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc'))).then(sn=>{
+          if(sn.docs.length){msgEl.innerHTML='';sn.forEach(d=>{const msg=d.data();const mine=msg.from===S.cu.uid;const b=document.createElement('div');b.style.cssText='max-width:75%;padding:9px 13px;border-radius:16px;font-size:14px;word-break:break-word;margin-bottom:4px;'+(mine?'background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;align-self:flex-end;margin-left:auto;':'background:var(--surf);color:var(--txt);');b.textContent=msg.text;msgEl.appendChild(b);});msgEl.scrollTop=msgEl.scrollHeight;}
+        }).catch(()=>{});
+      }
+    },1000);
   }catch(e){console.error('sendMsg error',e);alert('Error enviando: '+e.message);}
 }
 
