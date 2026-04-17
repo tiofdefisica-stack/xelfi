@@ -745,7 +745,8 @@ onAuthStateChanged(auth,async u=>{
         const savedPid=sessionStorage.getItem('xelfi-pid');
         const savedChatWith=sessionStorage.getItem('xelfi-chatWith');
         if(savedView&&savedView!=='login'&&savedView!=='register'){
-          S.view=savedView;
+          // Don't restore chat view on refresh - go to messages instead
+          S.view=savedView==='chat'?'messages':savedView;
           if(savedPid)S.pid=savedPid;
           if(savedChatWith)S.chatWith=savedChatWith;
         }
@@ -1628,7 +1629,7 @@ async function renderChat(app){
   // Nav
   const nav=document.createElement('div');nav.className='nav';
   const nr=document.createElement('div');nr.className='nav-r';
-  const bk=document.createElement('button');bk.className='nb';bk.textContent='←';bk.onclick=()=>{if(unsubChat)unsubChat();S.view='messages';render();};
+  const bk=document.createElement('button');bk.className='nb';bk.textContent='←';bk.onclick=()=>{if(unsubChat){unsubChat();unsubChat=null;}S.view='messages';S.chatWith=null;render();};
   const fi=document.createElement('div');fi.style.cssText='display:flex;align-items:center;gap:8px;flex:1;';
   fi.appendChild(avEl(friend,30));
   const fn=document.createElement('span');fn.style.cssText='font-weight:800;font-size:14px;font-family:Nunito,sans-serif;';fn.textContent=friend.name;
@@ -1643,7 +1644,7 @@ async function renderChat(app){
   ir.style.cssText='display:flex;gap:8px;align-items:center;padding:10px 14px;padding-bottom:max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--bor);background:var(--card);flex-shrink:0;margin-bottom:58px;';
   const ci=document.createElement('input');ci.type='text';
   ci.style.cssText='flex:1;background:var(--bg);border:1.5px solid var(--bor);border-radius:22px;padding:10px 16px;color:var(--txt);font-size:14px;outline:none;font-family:Nunito Sans,sans-serif;';
-  ci.placeholder='Escribe un mensaje...';ci.value=S.mt||'';
+  ci.id='chat-input-field';ci.placeholder='Escribe un mensaje...';ci.value=S.mt||'';
   ci.oninput=e=>S.mt=e.target.value;
   ci.addEventListener('keydown',e=>{if(e.key==='Enter')sendMsg(chatId);});
   const sb=document.createElement('button');
@@ -1679,12 +1680,17 @@ async function renderChat(app){
   }
 }
 
-async function sendMsg(chatId){const text=S.mt||'';if(!text.trim())return;const ci=document.querySelector('.chat-inp input');if(ci){ci.value='';S.mt='';}try{
-  // Ensure chat document exists with correct participants
-  await setDoc(doc(db,'chats',chatId),{participants:[S.cu.uid,S.chatWith],updatedAt:serverTimestamp()},{merge:true});
-  await addDoc(collection(db,'chats',chatId,'messages'),{from:S.cu.uid,to:S.chatWith,text,createdAt:serverTimestamp(),read:false});
-  await addNotif(S.chatWith,'message',chatId);
-}catch(e){console.error('sendMsg error',e);}}
+async function sendMsg(chatId){
+  const text=S.mt||'';if(!text.trim())return;
+  S.mt='';
+  // Clear input visually
+  const ci=document.getElementById('chat-input-field');if(ci)ci.value='';
+  try{
+    await setDoc(doc(db,'chats',chatId),{participants:[S.cu.uid,S.chatWith],updatedAt:serverTimestamp()},{merge:true});
+    await addDoc(collection(db,'chats',chatId,'messages'),{from:S.cu.uid,to:S.chatWith,text,createdAt:serverTimestamp(),read:false});
+    await addNotif(S.chatWith,'message',chatId);
+  }catch(e){console.error('sendMsg error',e);alert('Error enviando: '+e.message);}
+}
 
 // GROUPS
 async function renderGroups(app){
