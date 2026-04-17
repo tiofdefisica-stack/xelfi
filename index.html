@@ -695,7 +695,10 @@ function renderNotifPanel(){
         panel.remove();
         if(n.postId&&['like','comment','repost'].includes(n.type)){openSinglePost(n.postId);}
         else if(n.type==='warning'){}
-        else if(n.type==='message'&&n.postId){openMiniChat(n.fromUserId,n.fromName||'');}
+        else if(n.type==='message'&&n.postId){
+        // Open direct chat
+        S.chatWith=n.fromUserId;S.view='chat';render();
+      }
         else if(n.fromUserId&&['facc','freq','tip','gift','referral'].includes(n.type)){S.pid=n.fromUserId;S.view='profile';render();}
         else if(['gjoin','gjoined'].includes(n.type)&&n.extra){S.gid=n.extra;S.view='group';render();}
       };
