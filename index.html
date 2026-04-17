@@ -738,6 +738,17 @@ onAuthStateChanged(auth,async u=>{
         return;
       }
       S.cu=u;const p=await loadU(u.uid);S.me=p;if(p)S.users[u.uid]=p;await loadFriends();await loadBlocked();
+      // Restore last view from sessionStorage
+      try{
+        const savedView=sessionStorage.getItem('xelfi-view');
+        const savedPid=sessionStorage.getItem('xelfi-pid');
+        const savedChatWith=sessionStorage.getItem('xelfi-chatWith');
+        if(savedView&&savedView!=='login'&&savedView!=='register'){
+          S.view=savedView;
+          if(savedPid)S.pid=savedPid;
+          if(savedChatWith)S.chatWith=savedChatWith;
+        }
+      }catch(e){}
       // Load xelfi banner
       try{const bn=await getDoc(doc(db,'config','banner'));if(bn.exists())S.xelfiBanner=bn.data().text;}catch(e){}
       S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildStoreBubble(),1200);}
@@ -787,6 +798,8 @@ function render(){
     if(xelfiHistory.length>15)xelfiHistory.shift();
     history.pushState(null,'',window.location.href);
   }
+  // Save current view to sessionStorage
+  try{sessionStorage.setItem('xelfi-view',S.view);if(S.pid)sessionStorage.setItem('xelfi-pid',S.pid);if(S.chatWith)sessionStorage.setItem('xelfi-chatWith',S.chatWith);}catch(e){}
   const app=document.getElementById('app');app.innerHTML='';
   const ob=document.getElementById('bnav');if(ob)ob.remove();
   if(!S.cu){app.appendChild(S.view==='register'?renderReg():renderLogin());return;}
@@ -1638,8 +1651,27 @@ async function renderChat(app){
   ir.appendChild(ci);ir.appendChild(sb);wrap.appendChild(ir);
   app.appendChild(wrap);
   ci.focus();
-  // Listen for messages
+  // Listen for messages - also check for legacy chat IDs
   if(unsubChat)unsubChat();
+  // Try to find legacy chat document with both participants
+  try{
+    const allChats=await getDocs(collection(db,'chats'));
+    for(const d of allChats.docs){
+      if(d.id!==chatId){
+        const data=d.data();
+        const parts=data.participants||[];
+        if(parts.includes(S.cu.uid)&&parts.includes(S.chatWith)){
+          // Found legacy chat - migrate messages
+          const legacyMsgs=await getDocs(collection(db,'chats',d.id,'messages'));
+          for(const m of legacyMsgs.docs){
+            await setDoc(doc(db,'chats',chatId,'messages',m.id),m.data());
+          }
+          await deleteDoc(doc(db,'chats',d.id));
+          break;
+        }
+      }
+    }
+  }catch(e){}
   try{
     unsubChat=onSnapshot(
       query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc')),
