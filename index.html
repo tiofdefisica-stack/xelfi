@@ -751,7 +751,7 @@ onAuthStateChanged(auth,async u=>{
       }catch(e){}
       // Load xelfi banner
       try{const bn=await getDoc(doc(db,'config','banner'));if(bn.exists())S.xelfiBanner=bn.data().text;}catch(e){}
-      S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildStoreBubble(),1200);}
+      if(S.view==='login'||S.view==='register')S.view='feed';listenNotifs(u.uid);setTimeout(()=>checkReferral(),2000);setTimeout(()=>buildStoreBubble(),1200);}
     else{S.cu=null;S.me=null;S.view='login';if(unsubN)unsubN();if(unsubP)unsubP();}
     render();
   }catch(err){console.error(err);document.getElementById('app').innerHTML='<div style="padding:40px;text-align:center;color:var(--red);">Error cargando: '+err.message+'</div>';}
