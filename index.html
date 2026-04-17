@@ -1652,27 +1652,8 @@ async function renderChat(app){
   ir.appendChild(ci);ir.appendChild(sb);wrap.appendChild(ir);
   app.appendChild(wrap);
   ci.focus();
-  // Listen for messages - also check for legacy chat IDs
+  // Listen for messages
   if(unsubChat)unsubChat();
-  // Try to find legacy chat document with both participants
-  try{
-    const allChats=await getDocs(collection(db,'chats'));
-    for(const d of allChats.docs){
-      if(d.id!==chatId){
-        const data=d.data();
-        const parts=data.participants||[];
-        if(parts.includes(S.cu.uid)&&parts.includes(S.chatWith)){
-          // Found legacy chat - migrate messages
-          const legacyMsgs=await getDocs(collection(db,'chats',d.id,'messages'));
-          for(const m of legacyMsgs.docs){
-            await setDoc(doc(db,'chats',chatId,'messages',m.id),m.data());
-          }
-          await deleteDoc(doc(db,'chats',d.id));
-          break;
-        }
-      }
-    }
-  }catch(e){}
   try{
     unsubChat=onSnapshot(
       query(collection(db,'chats',chatId,'messages'),orderBy('createdAt','asc')),
@@ -1698,7 +1679,12 @@ async function renderChat(app){
   }
 }
 
-async function sendMsg(chatId){const text=S.mt||'';if(!text.trim())return;const ci=document.querySelector('.chat-inp input');if(ci){ci.value='';S.mt='';}try{await addDoc(collection(db,'chats',chatId,'messages'),{from:S.cu.uid,to:S.chatWith,text,createdAt:serverTimestamp(),read:false});await addNotif(S.chatWith,'message',null);}catch(e){}}
+async function sendMsg(chatId){const text=S.mt||'';if(!text.trim())return;const ci=document.querySelector('.chat-inp input');if(ci){ci.value='';S.mt='';}try{
+  // Ensure chat document exists with correct participants
+  await setDoc(doc(db,'chats',chatId),{participants:[S.cu.uid,S.chatWith],updatedAt:serverTimestamp()},{merge:true});
+  await addDoc(collection(db,'chats',chatId,'messages'),{from:S.cu.uid,to:S.chatWith,text,createdAt:serverTimestamp(),read:false});
+  await addNotif(S.chatWith,'message',chatId);
+}catch(e){console.error('sendMsg error',e);}}
 
 // GROUPS
 async function renderGroups(app){
