@@ -677,7 +677,7 @@ function renderNotifPanel(){
       ni.onclick=async()=>{
         if(!n.read)try{await updateDoc(doc(db,'notifications',n.id),{read:true});}catch(e){}
         panel.remove();
-        if(n.postId&&['like','comment','repost'].includes(n.type)){S.view='feed';render();setTimeout(()=>{const el=document.getElementById('p-'+n.postId);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},600);}
+        if(n.postId&&['like','comment','repost'].includes(n.type)){openSinglePost(n.postId);}
         else if(n.type==='warning'){}
         else if(n.type==='message'&&n.postId){openMiniChat(n.fromUserId,n.fromName||'');}
         else if(n.fromUserId&&['facc','freq','tip','gift','referral'].includes(n.type)){S.pid=n.fromUserId;S.view='profile';render();}
@@ -694,7 +694,13 @@ function renderNotifPanel(){
   return panel;
 }
 
-function toggleTheme(){document.body.classList.toggle('light');}
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  localStorage.setItem('xelfi-theme',isLight?'light':'dark');
+}
+// Restore theme on load
+if(localStorage.getItem('xelfi-theme')==='dark'){document.body.classList.remove('light');}
+else{document.body.classList.add('light');}
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
 function installApp(){if(deferredPrompt)deferredPrompt.prompt();else alert('Toca los 3 puntos del navegador → Instalar app');}
@@ -3320,6 +3326,33 @@ function openNormas(){
   });
   const footer=document.createElement('div');footer.style.cssText='text-align:center;padding:20px;color:var(--mut);font-size:12px;border-top:1px solid var(--bor);margin-top:16px;';footer.textContent='Última actualización: Abril 2026 · Xelfi';content.appendChild(footer);
   panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.classList.add('open'),10);
+}
+
+// SINGLE POST VIEW
+async function openSinglePost(postId){
+  let panel=document.getElementById('single-post-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.id='single-post-panel';
+  panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;';
+  // Header
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surf);border-bottom:1px solid var(--bor);position:sticky;top:0;z-index:10;flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const t=document.createElement('div');t.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';t.textContent='Publicación';
+  hdr.appendChild(back);hdr.appendChild(t);panel.appendChild(hdr);
+  // Content area
+  const content=document.createElement('div');content.style.cssText='padding:12px;padding-bottom:80px;';
+  content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Cargando...</div>';
+  panel.appendChild(content);
+  document.body.appendChild(panel);
+  setTimeout(()=>panel.style.transform='translateY(0)',10);
+  // Load post
+  try{
+    const postDoc=await getDoc(doc(db,'posts',postId));
+    if(!postDoc.exists()){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Post no encontrado</div>';return;}
+    const post={id:postDoc.id,...postDoc.data()};
+    if(!S.users[post.userId])await loadU(post.userId);
+    content.innerHTML='';
+    content.appendChild(renderPost(post));
+  }catch(e){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Error cargando post</div>';}
 }
 
 async function loadStoreAds(container){
