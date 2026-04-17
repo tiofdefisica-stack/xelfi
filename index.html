@@ -353,6 +353,18 @@ textarea{resize:none;line-height:1.5;}
 .report-box{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));}
 .report-reason{display:flex;align-items:center;gap:10px;padding:12px;background:var(--surf);border:1.5px solid var(--bor);border-radius:12px;cursor:pointer;margin-bottom:8px;font-size:14px;transition:border-color .2s;}
 .report-reason.selected{border-color:var(--acc);background:#9b35e811;}
+.health-bar-wrap{margin:8px 0 12px;background:var(--surf);border-radius:10px;padding:10px 12px;border:1px solid var(--bor);}
+.health-bar-track{height:8px;background:var(--bor);border-radius:4px;overflow:hidden;margin:6px 0 4px;}
+.health-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.health-label{font-size:12px;font-weight:700;font-family:Nunito,sans-serif;}
+.health-sub{font-size:11px;color:var(--mut);}
+.normas-panel{position:fixed;inset:0;background:var(--bg);z-index:2000;overflow-y:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
+.normas-panel.open{transform:translateY(0);}
+.normas-panel-header{background:var(--surf);border-bottom:1px solid var(--bor);padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;}
+.normas-content{padding:16px;max-width:600px;margin:0 auto;}
+.norma-section{margin-bottom:20px;}
+.norma-title{font-weight:900;font-size:15px;font-family:Nunito,sans-serif;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.norma-text{font-size:13px;line-height:1.7;color:var(--mut);}
 .store-bubble{position:fixed;bottom:94px;right:16px;width:54px;height:54px;background:linear-gradient(135deg,#c060ff,#9b35e8);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px #9b35e855;z-index:400;animation:gfloat 3s ease-in-out infinite;}
 .store-bubble:active{transform:scale(.9);}
 .store-feed-panel{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
@@ -637,6 +649,8 @@ function renderNotifPanel(){
       if(n.postId&&['like','comment','repost'].includes(n.type)){
         S.view='feed';render();
         setTimeout(()=>{const el=document.getElementById('p-'+n.postId);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},600);
+      } else if(n.type==='warning'){
+        // Show warning - already marked as read, no navigation needed
       } else if(n.type==='message'&&n.postId){
         const p=document.getElementById('npanel');if(p)p.remove();
         openMiniChat(n.fromUserId,n.fromName||'Anunciante');
@@ -1761,6 +1775,10 @@ async function renderSettings(app){
   const sApp=sec2('Apariencia');
   const thRow=document.createElement('div');thRow.style.cssText='display:flex;align-items:center;gap:10px;padding:10px 0;';const thIc=document.createElement('span');thIc.style.fontSize='18px';thIc.textContent=document.body.classList.contains('light')?'☀️':'🌙';const thLb=document.createElement('span');thLb.style.cssText='flex:1;font-size:14px;font-weight:600;';thLb.textContent='Modo oscuro';const thTog=document.createElement('div');thTog.style.cssText='width:42px;height:22px;border-radius:11px;background:var(--acc);cursor:pointer;position:relative;';const thDot=document.createElement('div');thDot.style.cssText='width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:2px;transition:left .2s;left:'+(document.body.classList.contains('light')?'2px':'22px')+';';thTog.appendChild(thDot);thTog.onclick=()=>{toggleTheme();thDot.style.left=document.body.classList.contains('light')?'2px':'22px';thIc.textContent=document.body.classList.contains('light')?'☀️':'🌙';};thRow.appendChild(thIc);thRow.appendChild(thLb);thRow.appendChild(thTog);sApp.appendChild(thRow);
   main.appendChild(sApp);
+  const sNormas=sec2('Comunidad');
+  sNormas.appendChild(row2('📜','Normas de la comunidad',()=>openNormas()));
+  sNormas.appendChild(row2('⚑','Cómo funciona el sistema de denuncias',()=>openNormas()));
+  main.appendChild(sNormas);
   const sInst=sec2('App');sInst.appendChild(row2('📲','Instalar Xelfi en tu movil',()=>installApp()));main.appendChild(sInst);
   const sHelp=sec2('Asistencia');
   [['¿Como cambio mi contrasena?','Ve a Ajustes → Cambiar contrasena. Te llega un correo.'],['¿Como borro una publicacion?','Toca el icono 🗑️ en tu publicacion.'],['¿Como bloqueo a alguien?','Entra en su perfil y toca Bloquear.'],['¿Como creo un grupo?','Toca 👥 en la barra inferior → + Crear grupo.'],['¿Como uso la IA @xelfi?','Escribe @xelfi en cualquier publicacion y te responde automaticamente.']].forEach(([q,a])=>{const r=document.createElement('div');r.style.cssText='padding:9px 0;border-bottom:1px solid var(--bor);cursor:pointer;';const qt=document.createElement('div');qt.style.cssText='font-weight:700;font-size:13px;margin-bottom:3px;';qt.textContent=q;const at=document.createElement('div');at.style.cssText='font-size:12px;color:var(--mut);display:none;line-height:1.4;';at.textContent=a;r.onclick=()=>at.style.display=at.style.display==='none'?'block':'none';r.appendChild(qt);r.appendChild(at);sHelp.appendChild(r);});
@@ -2115,9 +2133,9 @@ function openAdminPanel(){
         deleteBtn.onclick=async()=>{
           if(!confirm('Eliminar este contenido?'))return;
           try{
-            if(rep.type==='post')await deleteDoc(doc(db,'posts',rep.targetId));
-            else if(rep.type==='comment'){/* handled via post update */}
-            else if(rep.type==='profile')await updateDoc(doc(db,'users',rep.targetId),{suspended:true});
+            const reasonLabel=REPORT_REASONS.find(r=>r.id===rep.reason)?.label||rep.reason;
+            if(rep.type==='post'){await deleteDoc(doc(db,'posts',rep.targetId));await addInfraction(rep.targetUserId,reasonLabel);}
+            else if(rep.type==='profile'){await updateDoc(doc(db,'users',rep.targetUserId),{suspended:true});await addInfraction(rep.targetUserId,reasonLabel);}
             await updateDoc(doc(db,'reports',d.id),{status:'actioned'});
             card.remove();
           }catch(e){alert('Error: '+e.message);}
@@ -3233,6 +3251,77 @@ function openReport(type, targetId, targetUserId, preview){
   };
   box.appendChild(sendBtn);
   ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
+}
+
+// HEALTH SYSTEM
+function getHealthInfo(infractions){
+  const n=infractions||0;
+  if(n===0)return{emoji:'🟢',label:'Saludable',color:'#22c55e',pct:100,desc:'Tu perfil está en perfecto estado.'};
+  if(n<=2)return{emoji:'🟡',label:'Aviso',color:'#fbbf24',pct:75,desc:'Tienes '+n+' infracción'+(n>1?'es':'')+'. Cuida el contenido que publicas.'};
+  if(n<=4)return{emoji:'🟠',label:'En riesgo',color:'#f97316',pct:40,desc:'Atención: '+n+' infracciones. Una más puede suponer suspensión temporal.'};
+  if(n<=7)return{emoji:'🔴',label:'Peligro',color:'#ef4444',pct:15,desc:'Perfil en peligro. '+n+' infracciones acumuladas.'};
+  return{emoji:'⛔',label:'Suspendido',color:'#7f1d1d',pct:5,desc:'Perfil suspendido por acumulación de infracciones.'};
+}
+
+function buildHealthBar(infractions){
+  const info=getHealthInfo(infractions);
+  const wrap=document.createElement('div');wrap.className='health-bar-wrap';
+  const top=document.createElement('div');top.style.cssText='display:flex;justify-content:space-between;align-items:center;';
+  const lbl=document.createElement('div');lbl.className='health-label';lbl.textContent=info.emoji+' Salud del perfil: '+info.label;
+  const pts=document.createElement('div');pts.style.cssText='font-size:11px;color:var(--mut);';pts.textContent=(infractions||0)+' infracciones';
+  top.appendChild(lbl);top.appendChild(pts);wrap.appendChild(top);
+  const track=document.createElement('div');track.className='health-bar-track';
+  const fill=document.createElement('div');fill.className='health-bar-fill';fill.style.cssText='width:'+info.pct+'%;background:'+info.color+';';
+  track.appendChild(fill);wrap.appendChild(track);
+  const sub=document.createElement('div');sub.className='health-sub';sub.textContent=info.desc;wrap.appendChild(sub);
+  if(infractions>0){const rec=document.createElement('div');rec.style.cssText='font-size:10px;color:var(--mut);margin-top:4px;';rec.textContent='⏱️ Los puntos se recuperan con el tiempo siendo un buen miembro de la comunidad';wrap.appendChild(rec);}
+  return wrap;
+}
+
+async function addInfraction(userId, reason){
+  try{
+    const userRef=doc(db,'users',userId);
+    await updateDoc(userRef,{infractions:increment(1),lastInfractionAt:serverTimestamp()});
+    // Send warning notification
+    await addDoc(collection(db,'notifications'),{
+      toUserId:userId,type:'warning',
+      fromUserId:'system',fromName:'Xelfi',
+      message:'Tu contenido fue eliminado por: '+reason+'. Acumulación de infracciones puede resultar en suspensión.',
+      read:false,createdAt:serverTimestamp()
+    });
+  }catch(e){console.error('infraction error',e);}
+}
+
+function openNormas(){
+  let panel=document.getElementById('normas-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.className='normas-panel';panel.id='normas-panel';
+  const hdr=document.createElement('div');hdr.className='normas-panel-header';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';title.textContent='📜 Normas de la comunidad';
+  hdr.appendChild(back);hdr.appendChild(title);panel.appendChild(hdr);
+  const content=document.createElement('div');content.className='normas-content';
+  const intro=document.createElement('div');intro.style.cssText='font-size:13px;line-height:1.7;color:var(--mut);margin-bottom:20px;padding:14px;background:var(--surf);border-radius:12px;border-left:4px solid var(--acc);';
+  intro.textContent='Xelfi es una comunidad construida sobre el respeto, la creatividad y la conexión entre personas. Estas normas existen para mantener un espacio seguro y agradable para todos.';
+  content.appendChild(intro);
+  const normas=[
+    {emoji:'🤝',title:'Respeto mutuo',text:'Trata a los demás como te gustaría que te trataran a ti. No se toleran insultos, amenazas, humillaciones ni lenguaje ofensivo dirigido a personas o grupos.'},
+    {emoji:'🚫',title:'Sin contenido inapropiado',text:'Está prohibido publicar contenido sexual explícito, violencia gráfica, imágenes perturbadoras o cualquier material que resulte ofensivo para la comunidad.'},
+    {emoji:'👤',title:'Autenticidad',text:'No te hagas pasar por otra persona. La suplantación de identidad es una infracción grave. Usa tu identidad real o un pseudónimo propio.'},
+    {emoji:'📢',title:'Sin spam',text:'No publiques contenido repetitivo, publicidad no solicitada ni enlaces maliciosos. El spam perjudica la experiencia de todos.'},
+    {emoji:'🔒',title:'Privacidad',text:'Respeta la privacidad ajena. No compartas datos personales de otras personas sin su consentimiento explícito.'},
+    {emoji:'⚖️',title:'Información veraz',text:'No difundas bulos, desinformación o noticias falsas. Si no estás seguro de algo, no lo publiques como si fuera un hecho.'},
+    {emoji:'🛡️',title:'Protección de menores',text:'Cualquier contenido que ponga en riesgo a menores de edad será eliminado de inmediato y reportado a las autoridades competentes.'},
+    {emoji:'⚑',title:'Sistema de infracciones',text:'Las infracciones se acumulan en tu perfil. A más infracciones, mayor riesgo de suspensión temporal o permanente. Puedes recuperar puntos siendo un miembro activo y respetuoso con el tiempo.'},
+    {emoji:'📩',title:'Denuncias',text:'Si ves contenido que infringe estas normas, usa el botón ⚑ Denunciar. Nuestro equipo lo revisará y tomará las medidas necesarias.'},
+  ];
+  normas.forEach(n=>{
+    const sec=document.createElement('div');sec.className='norma-section';
+    const t=document.createElement('div');t.className='norma-title';t.textContent=n.emoji+' '+n.title;
+    const p=document.createElement('div');p.className='norma-text';p.textContent=n.text;
+    sec.appendChild(t);sec.appendChild(p);content.appendChild(sec);
+  });
+  const footer=document.createElement('div');footer.style.cssText='text-align:center;padding:20px;color:var(--mut);font-size:12px;border-top:1px solid var(--bor);margin-top:16px;';footer.textContent='Última actualización: Abril 2026 · Xelfi';content.appendChild(footer);
+  panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.classList.add('open'),10);
 }
 
 async function loadStoreAds(container){
