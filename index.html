@@ -696,8 +696,9 @@ function renderNotifPanel(){
         if(n.postId&&['like','comment','repost'].includes(n.type)){openSinglePost(n.postId);}
         else if(n.type==='warning'){}
         else if(n.type==='message'&&n.postId){
-        // Open direct chat
-        S.chatWith=n.fromUserId;S.view='chat';render();
+        const chatFriend=n.fromUserId;
+        panel.remove();
+        setTimeout(()=>{S.chatWith=chatFriend;S.view='chat';render();},100);
       }
         else if(n.fromUserId&&['facc','freq','tip','gift','referral'].includes(n.type)){S.pid=n.fromUserId;S.view='profile';render();}
         else if(['gjoin','gjoined'].includes(n.type)&&n.extra){S.gid=n.extra;S.view='group';render();}
@@ -1604,7 +1605,6 @@ function openNewGroupPanel(){
 
 
 async function renderChat(app){
-  console.log('renderChat - S.chatWith:', S.chatWith);
   const friend=await loadU(S.chatWith)||{name:'Usuario',handle:'',avatar:'star',photo:''};
   const chatId=[S.cu.uid,S.chatWith].sort().join('_');
   // Build layout
