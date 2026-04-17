@@ -1378,7 +1378,19 @@ async function renderProf(app){
   if(!isOwn){
     const bw2=document.createElement('div');bw2.style.cssText='display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;';
     if(isF){const fb=document.createElement('button');fb.className='btn-o';fb.style.cssText='color:var(--grn);border-color:#4ade8055;font-size:12px;';fb.textContent='Amigos ✓';fb.disabled=true;bw2.appendChild(fb);const mb=document.createElement('button');mb.className='btn';mb.style.cssText='font-size:12px;padding:6px 11px;';mb.textContent='💬 Mensaje';mb.onclick=()=>{S.chatWith=S.pid;S.view='chat';render();};bw2.appendChild(mb);}
-    else if(pend){const fb=document.createElement('button');fb.className='btn-o';fb.style.fontSize='12px';fb.textContent='Solicitud enviada';fb.disabled=true;bw2.appendChild(fb);}
+    else if(pend){
+      const fb=document.createElement('button');fb.className='btn-o';fb.style.cssText='font-size:12px;color:var(--mut);';fb.textContent='Solicitud enviada ✓';fb.disabled=true;bw2.appendChild(fb);
+      const cancelBtn=document.createElement('button');cancelBtn.className='btn-o';cancelBtn.style.cssText='font-size:12px;color:#ff4d6d;border-color:#ff4d6d44;margin-left:6px;';cancelBtn.textContent='Cancelar';
+      cancelBtn.onclick=async()=>{
+        try{
+          const sn=await getDocs(collection(db,'friendships'));
+          for(const d of sn.docs){const fd=d.data();if(fd.from===S.cu.uid&&fd.to===S.pid&&fd.status==='pending'){await deleteDoc(doc(db,'friendships',d.id));break;}}
+          cancelBtn.textContent='✓ Cancelada';cancelBtn.disabled=true;fb.textContent='Agregar amigo';fb.disabled=false;
+          fb.onclick=async()=>{await sendFriendReq(S.pid);fb.textContent='Enviada ✓';fb.disabled=true;};
+        }catch(e){alert('Error: '+e.message);}
+      };
+      bw2.appendChild(cancelBtn);
+    }
     else{const fb=document.createElement('button');fb.className='btn';fb.style.cssText='font-size:12px;padding:6px 11px;';fb.textContent='Agregar amigo';fb.onclick=async()=>{await sendFriendReq(S.pid);fb.textContent='Enviada ✓';fb.disabled=true;};bw2.appendChild(fb);}
     const blkB=document.createElement('button');blkB.style.cssText='background:transparent;border:none;color:var(--mut);font-size:11px;cursor:pointer;text-decoration:underline;';blkB.textContent=isBlk?'Desbloquear':'Bloquear';blkB.onclick=async()=>{if(isBlk)await unblockUser(S.pid);else await blockUser(S.pid);};bw2.appendChild(blkB);
     ph.appendChild(bw2);}
