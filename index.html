@@ -803,6 +803,9 @@ function render(){
   // Save current view to sessionStorage
   try{sessionStorage.setItem('xelfi-view',S.view);if(S.pid)sessionStorage.setItem('xelfi-pid',S.pid);if(S.chatWith)sessionStorage.setItem('xelfi-chatWith',S.chatWith);}catch(e){}
   const app=document.getElementById('app');app.innerHTML='';
+  // Show store bubble only on feed
+  const sb=document.getElementById('store-bubble');
+  if(sb)sb.style.display=(['feed'].includes(S.view))?'flex':'none';
   const ob=document.getElementById('bnav');if(ob)ob.remove();
   if(!S.cu){app.appendChild(S.view==='register'?renderReg():renderLogin());return;}
   const v=S.view;
