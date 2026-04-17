@@ -1170,7 +1170,7 @@ function buildCmts(post){
     if(c.isAI||c.userId==='xelfi_ai'){
       const ci=document.createElement('div');ci.className='ci';
       const av=document.createElement('div');av.className='av';av.style.cssText='width:28px;height:28px;flex-shrink:0;font-size:14px;background:linear-gradient(135deg,#9b35e8,#c060ff);';av.textContent='🤖';
-      const cb=document.createElement('div');cb.className='cb';cb.style.cssText='background:linear-gradient(135deg,#1a0a2e,#0a1a2e);border-color:#9b35e855;';
+      const cb=document.createElement('div');cb.className='cb';cb.style.cssText='background:var(--surf);border-color:#9b35e855;border:1px solid #9b35e855;';
       const ca=document.createElement('span');ca.className='ca';ca.style.color='#c060ff';ca.textContent='Xelfi';const badge=document.createElement('span');badge.className='ai-badge';badge.textContent='IA';ca.appendChild(badge);
       const txt=document.createElement('p');txt.className='ctxt';txt.textContent=c.text||'...';
       cb.appendChild(ca);cb.appendChild(txt);ci.appendChild(av);ci.appendChild(cb);cs.appendChild(ci);return;
