@@ -730,7 +730,29 @@ onAuthStateChanged(auth,async u=>{
 
 // Back button
 let xelfiHistory=['feed'];
-window.addEventListener('popstate',()=>{
+// Panel stack for overlays (single post, normas, pro profile, notifications, etc)
+const xelfiPanelStack=[];
+function xelfiPushPanel(panel){
+  xelfiPanelStack.push(panel);
+  history.pushState({panel:true},'',window.location.href);
+}
+function xelfiPopPanel(){
+  const panel=xelfiPanelStack.pop();
+  if(panel&&document.body.contains(panel)){panel.remove();}
+}
+
+window.addEventListener('popstate',(e)=>{
+  // First try to close any open overlay panels
+  const overlayIds=['npanel','single-post-panel','normas-panel','pro-profile-panel','ad-detail-panel','store-feed-panel','img-viewer','repost-ov','pro-card-ov','new-group-ov','new-channel-ov','pending-ads-ov','reports-admin-ov'];
+  let closed=false;
+  for(const id of overlayIds){
+    const el=document.getElementById(id);
+    if(el&&(el.classList.contains('open')||el.style.transform==='translateY(0px)'||el.style.transform==='translateY(0)'||el.style.display==='flex'||id==='npanel')){
+      el.remove();closed=true;break;
+    }
+  }
+  if(closed){history.pushState(null,'',window.location.href);return;}
+  // Then try xelfi view history
   if(xelfiHistory.length>1){
     xelfiHistory.pop();
     S.view=xelfiHistory[xelfiHistory.length-1]||'feed';
