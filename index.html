@@ -561,13 +561,15 @@ async function checkReferral(){
 }
 
 // AI
-async function callXelfiAI(question,postId){
+async function callXelfiAI(question,postId,imageUrl){
   if(!isAdmin()){const ok=await spendXC(S.cu.uid,5);if(!ok){await updateDoc(doc(db,'posts',postId),{comments:arrayUnion({userId:'xelfi_ai',text:'❌ Necesitas 5 XC para consultar a @xelfi.',createdAt:new Date().toISOString(),isAI:true})});return;}}
   try{
+    const body={question};
+    if(imageUrl){body.image=imageUrl;body.hasImage=true;}
     const res=await fetch('https://xelfi-ai.tiofdefisica.workers.dev',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({question})
+      body:JSON.stringify(body)
     });
     const data=await res.json();
     const reply=data.reply||'No pude responder en este momento.';
@@ -575,7 +577,7 @@ async function callXelfiAI(question,postId){
     if(snap.exists()){const cmts=snap.data().comments||[];await updateDoc(doc(db,'posts',postId),{comments:[...cmts,{userId:'xelfi_ai',text:reply,createdAt:new Date().toISOString(),isAI:true}]});}
   }catch(e){await updateDoc(doc(db,'posts',postId),{comments:arrayUnion({userId:'xelfi_ai',text:'Error conectando con la IA: '+e.message,createdAt:new Date().toISOString(),isAI:true})});}
 }
-async function checkAI(post){if(!post.content)return;if(post.content.toLowerCase().includes('@xelfi')&&!post.aiProcessed){await updateDoc(doc(db,'posts',post.id),{aiProcessed:true});await callXelfiAI(post.content.replace(/@xelfi/gi,'').trim(),post.id);}}
+async function checkAI(post){if(!post.content)return;if(post.content.toLowerCase().includes('@xelfi')&&!post.aiProcessed){await updateDoc(doc(db,'posts',post.id),{aiProcessed:true});await callXelfiAI(post.content.replace(/@xelfi/gi,'').trim(),post.id,post.image||null);}}
 
 // PROMO
 function buildPromo(idx){
