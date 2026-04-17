@@ -577,7 +577,7 @@ async function callXelfiAI(question,postId,imageUrl){
     if(snap.exists()){const cmts=snap.data().comments||[];await updateDoc(doc(db,'posts',postId),{comments:[...cmts,{userId:'xelfi_ai',text:reply,createdAt:new Date().toISOString(),isAI:true}]});}
   }catch(e){await updateDoc(doc(db,'posts',postId),{comments:arrayUnion({userId:'xelfi_ai',text:'Error conectando con la IA: '+e.message,createdAt:new Date().toISOString(),isAI:true})});}
 }
-async function checkAI(post){if(!post.content)return;if(post.content.toLowerCase().includes('@xelfi')&&!post.aiProcessed){await updateDoc(doc(db,'posts',post.id),{aiProcessed:true});await callXelfiAI(post.content.replace(/@xelfi/gi,'').trim(),post.id,post.image||null);}}
+async function checkAI(post){if(!post.content)return;if(post.content.toLowerCase().includes('@xelfi')&&!post.aiProcessed){await updateDoc(doc(db,'posts',post.id),{aiProcessed:true});await callXelfiAI(post.content.replace(/@xelfi/gi,'').trim(),post.id,null);}}
 
 // PROMO
 function buildPromo(idx){
@@ -1019,7 +1019,7 @@ function renderComposer(){
     pb.disabled=true;pb.innerHTML='<span class="spin"></span>';
     try{const _postContent=S.np;const _postImage=(S.nimgs&&S.nimgs[0])||null;
     const _postRef=await addDoc(collection(db,'posts'),{userId:S.cu.uid,type:(S.nimgs&&S.nimgs.length>0)?'image':'status',content:_postContent,image:_postImage,images:S.nimgs&&S.nimgs.length>1?S.nimgs:null,privacy:S.npv,createdAt:serverTimestamp(),likes:[],comments:[],reposts:[]});
-    if(_postContent.toLowerCase().includes('@xelfi'))setTimeout(()=>checkAI({id:_postRef.id,content:_postContent,image:_postImage}),1500);
+    if(_postContent.toLowerCase().includes('@xelfi'))setTimeout(()=>checkAI({id:_postRef.id,content:_postContent,image:null}),1500);
     await addXC(S.cu.uid,10);S.np='';S.ni='';S.nimgs=[];S.npv='public';render();}
     catch(e){alert('Error: '+e.message);pb.disabled=false;pb.textContent='Publicar';}};
   act.appendChild(ib);act.appendChild(ps);act.appendChild(pb);card.appendChild(act);return card;
