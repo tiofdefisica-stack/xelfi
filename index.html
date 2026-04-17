@@ -415,6 +415,12 @@ textarea{resize:none;line-height:1.5;}
 .gep{font-size:19px;cursor:pointer;padding:2px;border-radius:5px;}
 .gep:active{background:var(--bor);}
 </style>
+<script>
+// Restore theme immediately before page renders
+var t=localStorage.getItem('xelfi-theme');
+if(t==='dark'){document.documentElement.style.colorScheme='dark';}
+else{document.body.classList.add('light');}
+</script>
 </head>
 <body>
 <div id="app"><div class="load" style="padding:80px;font-size:16px;text-align:center;">Cargando Xelfi...</div></div>
@@ -698,9 +704,7 @@ function toggleTheme(){
   const isLight=document.body.classList.toggle('light');
   localStorage.setItem('xelfi-theme',isLight?'light':'dark');
 }
-// Restore theme on load
-if(localStorage.getItem('xelfi-theme')==='dark'){document.body.classList.remove('light');}
-else{document.body.classList.add('light');}
+// Theme already restored in head script
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;});
 function installApp(){if(deferredPrompt)deferredPrompt.prompt();else alert('Toca los 3 puntos del navegador → Instalar app');}
