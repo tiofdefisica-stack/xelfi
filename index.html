@@ -349,6 +349,10 @@ textarea{resize:none;line-height:1.5;}
 .channel-react-row{display:flex;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--bor);}
 .channel-react-btn{background:var(--surf);border:1px solid var(--bor);border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;font-family:Nunito Sans,sans-serif;transition:all .15s;}
 .channel-react-btn.active{background:var(--acc);border-color:var(--acc);color:#fff;}
+.report-overlay{position:fixed;inset:0;background:#000b;z-index:4000;display:flex;align-items:flex-end;justify-content:center;}
+.report-box{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));}
+.report-reason{display:flex;align-items:center;gap:10px;padding:12px;background:var(--surf);border:1.5px solid var(--bor);border-radius:12px;cursor:pointer;margin-bottom:8px;font-size:14px;transition:border-color .2s;}
+.report-reason.selected{border-color:var(--acc);background:#9b35e811;}
 .store-bubble{position:fixed;bottom:94px;right:16px;width:54px;height:54px;background:linear-gradient(135deg,#c060ff,#9b35e8);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px #9b35e855;z-index:400;animation:gfloat 3s ease-in-out infinite;}
 .store-bubble:active{transform:scale(.9);}
 .store-feed-panel{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);}
@@ -1102,6 +1106,12 @@ function renderPost(post){
     openRepostComposer(post);
   };
   acts.appendChild(rpb);
+  // Report button (only for other users posts)
+  if(post.userId!==S.cu?.uid){
+    const repBtn=document.createElement('button');repBtn.className='ab';repBtn.style.cssText='color:var(--mut);font-size:12px;margin-left:auto;';repBtn.textContent='⚑';repBtn.title='Denunciar';
+    repBtn.onclick=e=>{e.stopPropagation();openReport('post',post.id,post.userId,post.content||'');};
+    acts.appendChild(repBtn);
+  }
   // Share
   const shb=document.createElement('button');shb.className='ab';shb.textContent='↗️';shb.onclick=async()=>{const url='https://xelfi.live';const txt=(author.name||'')+' en Xelfi: '+(post.content||'').slice(0,80)+'... '+url;if(navigator.share)try{await navigator.share({title:'Xelfi',text:txt,url});}catch(e){}else try{await navigator.clipboard.writeText(txt);alert('Copiado!');}catch(e){}};acts.appendChild(shb);
   // Tip
@@ -1248,6 +1258,11 @@ async function renderProf(app){
   const pts=prof.points||0;const xcoins=prof.xcoins||0;
   const lvlD=document.createElement('div');lvlD.style.cssText='display:inline-block;background:#9b35e818;border:1px solid #9b35e833;border-radius:16px;padding:2px 9px;font-size:11px;font-weight:800;font-family:Nunito,sans-serif;color:var(--acc2);margin-bottom:5px;';lvlD.textContent=getLevel(pts)+' · '+pts+' pts';
   const xcRow=document.createElement('div');xcRow.style.cssText='display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,#1a0a2e,#2d0a4e);border-radius:10px;padding:7px 10px;margin-bottom:6px;cursor:pointer;';xcRow.appendChild(coinImg(22));const xcInf=document.createElement('div');xcInf.innerHTML='<div style="font-size:15px;font-weight:900;color:#fbbf24;font-family:Nunito,sans-serif;">'+xcoins+' XC</div><div style="font-size:10px;color:#7a6a9a;">Xelfi Coins</div>';xcRow.appendChild(xcInf);if(isOwn){const shopB=document.createElement('button');shopB.className='btn';shopB.style.cssText='margin-left:auto;font-size:11px;padding:5px 10px;';shopB.textContent='🛍️ Tienda';shopB.onclick=()=>{S.view='store';render();};xcRow.appendChild(shopB);
+    // Report profile button (only for other users)
+    if(!isOwnCheck){
+      const repProfBtn=document.createElement('button');repProfBtn.className='nb';repProfBtn.style.cssText='font-size:11px;color:var(--mut);padding:4px 8px;';repProfBtn.textContent='⚑ Denunciar perfil';
+      repProfBtn.onclick=()=>openReport('profile',S.pid,S.pid,prof.name+' '+prof.handle);xcRow.appendChild(repProfBtn);
+    }
     // Pro profile button - show if has professional card
     getDoc(doc(db,'professionals',S.pid||S.cu.uid)).then(proDoc=>{
       if(proDoc.exists()){
@@ -2062,6 +2077,46 @@ function openAdminPanel(){
     const s4=document.createElement('div');s4.className='admin-section';
     const t4=document.createElement('div');t4.className='admin-section-title';t4.textContent='Publicar anuncio como @xelfi';s4.appendChild(t4);
     const inp4=document.createElement('textarea');inp4.className='admin-input';inp4.placeholder='Escribe el anuncio...';inp4.rows=3;inp4.id='admin-announce-txt';s4.appendChild(inp4);
+    // Reports section
+    const s6=document.createElement('div');s6.className='admin-section';
+    const t6=document.createElement('div');t6.className='admin-section-title';t6.textContent='⚑ Denuncias';s6.appendChild(t6);
+    const b6=document.createElement('button');b6.className='admin-btn danger';b6.innerHTML='📋 Ver denuncias pendientes';
+    b6.onclick=async()=>{
+      const sn=await getDocs(query(collection(db,'reports'),orderBy('createdAt','desc')));
+      const pending=sn.docs.filter(d=>d.data().status==='pending');
+      if(!pending.length){alert('No hay denuncias pendientes.');return;}
+      let repOv=document.getElementById('reports-admin-ov');if(repOv)repOv.remove();
+      repOv=document.createElement('div');repOv.style.cssText='position:fixed;inset:0;background:#000b;z-index:5000;display:flex;align-items:flex-end;justify-content:center;';repOv.id='reports-admin-ov';
+      const repBox=document.createElement('div');repBox.style.cssText='background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));';
+      const repTitle=document.createElement('div');repTitle.style.cssText='font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:16px;display:flex;justify-content:space-between;';repTitle.textContent='⚑ Denuncias pendientes ('+pending.length+')';
+      const repCl=document.createElement('button');repCl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';repCl.textContent='✕';repCl.onclick=()=>repOv.remove();repTitle.appendChild(repCl);repBox.appendChild(repTitle);
+      pending.forEach(d=>{
+        const rep=d.data();const card=document.createElement('div');card.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:12px;margin-bottom:10px;';
+        const typeLabel=document.createElement('div');typeLabel.style.cssText='font-size:10px;font-weight:800;color:var(--acc2);margin-bottom:4px;font-family:Nunito,sans-serif;letter-spacing:.5px;';typeLabel.textContent=rep.type?.toUpperCase()+' · '+REPORT_REASONS.find(r=>r.id===rep.reason)?.label||rep.reason;card.appendChild(typeLabel);
+        const repBy=document.createElement('div');repBy.style.cssText='font-size:12px;color:var(--mut);margin-bottom:6px;';repBy.textContent='Denunciado por: '+rep.reporterName;card.appendChild(repBy);
+        if(rep.preview){const prev=document.createElement('div');prev.style.cssText='font-size:12px;background:var(--bg);border-radius:8px;padding:8px;margin-bottom:8px;color:var(--txt);';prev.textContent=rep.preview;card.appendChild(prev);}
+        if(rep.details){const det=document.createElement('div');det.style.cssText='font-size:12px;color:var(--mut);margin-bottom:8px;font-style:italic;';det.textContent='Detalles: '+rep.details;card.appendChild(det);}
+        const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;';
+        const resolveBtn=document.createElement('button');resolveBtn.style.cssText='flex:1;background:var(--surf);border:1px solid var(--bor);border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:Nunito,sans-serif;';resolveBtn.textContent='✓ Ignorar';
+        resolveBtn.onclick=async()=>{await updateDoc(doc(db,'reports',d.id),{status:'resolved'});card.remove();};
+        const deleteBtn=document.createElement('button');deleteBtn.style.cssText='flex:1;background:#ff4d6d22;border:1px solid #ff4d6d44;color:#ff4d6d;border-radius:8px;padding:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';deleteBtn.textContent='🗑️ Eliminar contenido';
+        deleteBtn.onclick=async()=>{
+          if(!confirm('Eliminar este contenido?'))return;
+          try{
+            if(rep.type==='post')await deleteDoc(doc(db,'posts',rep.targetId));
+            else if(rep.type==='comment'){/* handled via post update */}
+            else if(rep.type==='profile')await updateDoc(doc(db,'users',rep.targetId),{suspended:true});
+            await updateDoc(doc(db,'reports',d.id),{status:'actioned'});
+            card.remove();
+          }catch(e){alert('Error: '+e.message);}
+        };
+        row.appendChild(resolveBtn);row.appendChild(deleteBtn);card.appendChild(row);
+        repBox.appendChild(card);
+      });
+      repOv.appendChild(repBox);repOv.onclick=e=>{if(e.target===repOv)repOv.remove();};document.body.appendChild(repOv);
+    };
+    s6.appendChild(b6);box.appendChild(s6);
+
     const b5=document.createElement('button');b5.className='admin-btn safe';b5.innerHTML='📢 Publicar anuncio';
     b5.onclick=async()=>{
       const txt=document.getElementById('admin-announce-txt').value.trim();if(!txt)return;
@@ -3111,6 +3166,61 @@ function openNewChannelPanel(){
     }catch(e){alert('Error: '+e.message);saveBtn.disabled=false;saveBtn.textContent='Crear canal';}
   };
   box.appendChild(saveBtn);ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
+}
+
+// REPORT SYSTEM
+const REPORT_REASONS=[
+  {id:'spam',icon:'🚫',label:'Spam o publicidad no deseada'},
+  {id:'inappropriate',icon:'⚠️',label:'Contenido inapropiado u ofensivo'},
+  {id:'impersonation',icon:'👤',label:'Suplantación de identidad'},
+  {id:'harassment',icon:'😡',label:'Acoso o intimidación'},
+  {id:'fake',icon:'🤥',label:'Información falsa'},
+  {id:'other',icon:'📝',label:'Otro motivo'},
+];
+
+function openReport(type, targetId, targetUserId, preview){
+  let ov=document.getElementById('report-ov');if(ov)ov.remove();
+  ov=document.createElement('div');ov.className='report-overlay';ov.id='report-ov';
+  const box=document.createElement('div');box.className='report-box';
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;';title.textContent='⚑ Denunciar';
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';cl.onclick=()=>ov.remove();title.appendChild(cl);box.appendChild(title);
+  const sub=document.createElement('div');sub.style.cssText='font-size:12px;color:var(--mut);margin-bottom:16px;';sub.textContent='¿Por qué quieres denunciar esto?';box.appendChild(sub);
+  // Preview
+  if(preview){const prev=document.createElement('div');prev.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--mut);margin-bottom:14px;line-height:1.4;';prev.textContent=preview.slice(0,100)+(preview.length>100?'...':'');box.appendChild(prev);}
+  // Reasons
+  let selReason=null;
+  const reasonBtns=[];
+  REPORT_REASONS.forEach(r=>{
+    const btn=document.createElement('div');btn.className='report-reason';btn.innerHTML=r.icon+' <span style="flex:1;">'+r.label+'</span><span style="color:var(--mut);font-size:16px;">○</span>';
+    btn.onclick=()=>{
+      selReason=r.id;
+      reasonBtns.forEach(b=>{b.classList.remove('selected');b.querySelector('span:last-child').textContent='○';});
+      btn.classList.add('selected');btn.querySelector('span:last-child').textContent='●';
+    };
+    reasonBtns.push(btn);box.appendChild(btn);
+  });
+  // Details
+  const detLbl=document.createElement('label');detLbl.className='ad-form-label';detLbl.style.marginTop='12px';detLbl.textContent='Detalles adicionales (opcional)';box.appendChild(detLbl);
+  const ta=document.createElement('textarea');ta.className='ad-form-input';ta.placeholder='Añade más información si lo necesitas...';ta.rows=2;ta.style.resize='none';box.appendChild(ta);
+  // Submit
+  const sendBtn=document.createElement('button');sendBtn.className='btn';sendBtn.style.cssText='width:100%;margin-top:12px;background:linear-gradient(135deg,#ff4d6d,#dc2626);';sendBtn.textContent='Enviar denuncia';
+  sendBtn.onclick=async()=>{
+    if(!selReason){alert('Selecciona un motivo.');return;}
+    sendBtn.disabled=true;sendBtn.textContent='Enviando...';
+    try{
+      await addDoc(collection(db,'reports'),{
+        type,targetId,targetUserId,
+        reason:selReason,details:ta.value.trim(),
+        reportedBy:S.cu.uid,reporterName:S.me?.name||'',
+        status:'pending',createdAt:serverTimestamp(),
+        preview:preview?preview.slice(0,200):''
+      });
+      ov.remove();
+      alert('✅ Denuncia enviada. La revisaremos lo antes posible.');
+    }catch(e){alert('Error: '+e.message);sendBtn.disabled=false;sendBtn.textContent='Enviar denuncia';}
+  };
+  box.appendChild(sendBtn);
+  ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
 }
 
 async function loadStoreAds(container){
