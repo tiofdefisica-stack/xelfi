@@ -1174,16 +1174,19 @@ function renderPost(post){
     if(ytM){const iframe=document.createElement('iframe');iframe.src='https://www.youtube.com/embed/'+ytM[1];iframe.style.cssText='width:100%;aspect-ratio:16/9;border:none;border-radius:10px;margin-bottom:8px;display:block;';iframe.allowFullscreen=true;card.appendChild(iframe);}
   }
   if(post.videoUrl){
-    // Video - tap to play approach
-    const vWrap=document.createElement('div');vWrap.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;margin-bottom:8px;background:#000;min-height:200px;position:relative;display:flex;align-items:center;justify-content:center;';
-    const playBtn=document.createElement('button');playBtn.style.cssText='background:#ffffff22;border:2px solid #fff;border-radius:50%;width:60px;height:60px;font-size:24px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;';playBtn.textContent='▶';
-    vWrap.appendChild(playBtn);
-    playBtn.onclick=()=>{
-      // Open video in new tab - most reliable on mobile
-      window.open(post.videoUrl,'_blank');
+    const vid=document.createElement('video');
+    vid.controls=true;
+    vid.playsInline=true;
+    vid.preload='none';
+    vid.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:400px;display:block;margin-bottom:8px;background:#000;';
+    const src=document.createElement('source');
+    src.src=post.videoUrl;
+    src.type='video/mp4';
+    vid.appendChild(src);
+    vid.addEventListener('play',()=>{
       try{updateDoc(doc(db,'posts',post.id),{videoViews:increment(1)});}catch(e){}
-    };
-    card.appendChild(vWrap);
+    },{once:true});
+    card.appendChild(vid);
     // Insights for owner
     if(post.userId===S.cu?.uid){
       const ins=document.createElement('div');ins.style.cssText='font-size:11px;color:var(--mut);margin-bottom:6px;cursor:pointer;';
