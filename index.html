@@ -1179,14 +1179,8 @@ function renderPost(post){
     const playBtn=document.createElement('button');playBtn.style.cssText='background:#ffffff22;border:2px solid #fff;border-radius:50%;width:60px;height:60px;font-size:24px;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;';playBtn.textContent='▶';
     vWrap.appendChild(playBtn);
     playBtn.onclick=()=>{
-      vWrap.innerHTML='';
-      const vid=document.createElement('video');
-      vid.style.cssText='width:100%;max-height:400px;display:block;';
-      vid.controls=true;vid.playsInline=true;vid.autoplay=true;
-      vid.src=post.videoUrl;
-      vWrap.appendChild(vid);
-      vid.play().catch(()=>{});
-      // Track view
+      // Open video in new tab - most reliable on mobile
+      window.open(post.videoUrl,'_blank');
       try{updateDoc(doc(db,'posts',post.id),{videoViews:increment(1)});}catch(e){}
     };
     card.appendChild(vWrap);
