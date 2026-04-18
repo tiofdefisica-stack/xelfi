@@ -1984,6 +1984,7 @@ async function renderSettings(app){
   main.appendChild(sApp);
   const sNormas=sec2('Comunidad');
   sNormas.appendChild(row2('📜','Normas de la comunidad',()=>openNormas()));
+  sNormas.appendChild(row2('🎬','Programa de Creadores',()=>openCreatorApplication()));
   sNormas.appendChild(row2('⚑','Cómo funciona el sistema de denuncias',()=>openNormas()));
   main.appendChild(sNormas);
   const sInst=sec2('App');sInst.appendChild(row2('📲','Instalar Xelfi en tu movil',()=>installApp()));main.appendChild(sInst);
@@ -2304,6 +2305,13 @@ function openAdminPanel(){
     const inp4=document.createElement('textarea');inp4.className='admin-input';inp4.placeholder='Escribe el anuncio...';inp4.rows=3;inp4.id='admin-announce-txt';s4.appendChild(inp4);
     // Reports section
     // Rankings section
+    // Creator applications section
+    const s8=document.createElement('div');s8.className='admin-section';
+    const t8=document.createElement('div');t8.className='admin-section-title';t8.textContent='🎬 Solicitudes de Creadores';s8.appendChild(t8);
+    const b8=document.createElement('button');b8.className='admin-btn safe';b8.innerHTML='📋 Ver solicitudes pendientes';
+    b8.onclick=async()=>openCreatorApplicationsAdmin();
+    s8.appendChild(b8);box.appendChild(s8);
+
     const s7=document.createElement('div');s7.className='admin-section';
     const t7=document.createElement('div');t7.className='admin-section-title';t7.textContent='🏆 Ranking en tiempo real';s7.appendChild(t7);
     const b7=document.createElement('button');b7.className='admin-btn safe';b7.innerHTML='📊 Ver ranking de visualizaciones';
@@ -3696,6 +3704,8 @@ async function openUserInsights(){
       });
     }
   }catch(e){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Error cargando estadísticas</div>';}
+  // Creator program button
+  const creatorBtn=document.createElement('button');creatorBtn.className='btn';creatorBtn.style.cssText='width:100%;margin-top:16px;background:linear-gradient(135deg,#c060ff,#9b35e8);';creatorBtn.textContent='🎬 Solicitar acceso al Programa de Creadores';creatorBtn.onclick=openCreatorApplication;content.appendChild(creatorBtn);
 }
 
 function buildStatCard(s){
@@ -3706,6 +3716,60 @@ function buildStatCard(s){
   const lbl=document.createElement('div');lbl.style.cssText='font-size:12px;color:var(--mut);';lbl.textContent=s.label;
   info.appendChild(val);info.appendChild(lbl);card.appendChild(ico);card.appendChild(info);
   return card;
+}
+
+async function openCreatorApplicationsAdmin(){
+  let panel=document.getElementById('creator-admin-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.id='creator-admin-panel';
+  panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);';
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surf);border-bottom:1px solid var(--bor);flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';title.textContent='🎬 Solicitudes de Creadores';
+  hdr.appendChild(back);hdr.appendChild(title);panel.appendChild(hdr);
+  const content=document.createElement('div');content.style.cssText='flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;';
+  content.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);">Cargando...</div>';
+  panel.appendChild(content);document.body.appendChild(panel);
+  setTimeout(()=>panel.style.transform='translateY(0)',10);
+
+  try{
+    const sn=await getDocs(query(collection(db,'creator_applications'),orderBy('createdAt','desc')));
+    content.innerHTML='';
+    if(sn.empty){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">No hay solicitudes</div>';return;}
+    sn.forEach(d=>{
+      const app={id:d.id,...d.data()};
+      const card=document.createElement('div');card.style.cssText='background:var(--card);border:1px solid var(--bor);border-radius:14px;padding:14px;margin-bottom:12px;';
+      const statusColor=app.status==='approved'?'#22c55e':app.status==='rejected'?'#ef4444':'#fbbf24';
+      const statusLabel=app.status==='approved'?'✅ Aprobada':app.status==='rejected'?'❌ Rechazada':'⏳ Pendiente';
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><div style="font-weight:900;font-size:14px;font-family:Nunito,sans-serif;">'+app.xelfiName+' <span style="font-size:11px;color:var(--mut);">@'+app.xelfiHandle+'</span></div><span style="background:'+statusColor+'22;color:'+statusColor+';border-radius:8px;padding:3px 8px;font-size:11px;font-weight:800;">'+statusLabel+'</span></div>'
+        +'<div style="font-size:12px;color:var(--mut);margin-bottom:4px;">📧 '+app.email+' · 📱 '+app.phone+'</div>'
+        +'<div style="font-size:12px;color:var(--mut);margin-bottom:4px;">📍 '+app.address+'</div>'
+        +'<div style="font-size:12px;color:var(--mut);margin-bottom:4px;">🎬 '+app.type+'</div>'
+        +'<div style="font-size:12px;color:var(--txt);margin-bottom:8px;line-height:1.5;">'+app.desc+'</div>';
+      if(app.social){const socEl=document.createElement('div');socEl.style.cssText='font-size:12px;color:var(--mut);margin-bottom:8px;';socEl.textContent='🔗 '+app.social;card.appendChild(socEl);}
+      // DNI photo
+      if(app.dniPhoto){
+        const dniImg=document.createElement('img');dniImg.src=app.dniPhoto;dniImg.style.cssText='width:100%;border-radius:8px;max-height:180px;object-fit:cover;margin-bottom:10px;';card.appendChild(dniImg);
+      }
+      if(app.status==='pending'){
+        const btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px;';
+        const approveBtn=document.createElement('button');approveBtn.style.cssText='flex:1;background:#22c55e22;border:1px solid #22c55e44;color:#22c55e;border-radius:8px;padding:8px;font-size:12px;font-weight:800;cursor:pointer;';approveBtn.textContent='✅ Aprobar';
+        approveBtn.onclick=async()=>{
+          await updateDoc(doc(db,'creator_applications',app.id),{status:'approved'});
+          await updateDoc(doc(db,'users',app.userId),{isCreator:true});
+          await addDoc(collection(db,'notifications'),{toUserId:app.userId,type:'creator_approved',fromUserId:'system',fromName:'Xelfi',message:'¡Tu solicitud al Programa de Creadores ha sido aprobada! Ya tienes acceso a la monetización.',read:false,createdAt:serverTimestamp()});
+          card.remove();
+        };
+        const rejectBtn=document.createElement('button');rejectBtn.style.cssText='flex:1;background:#ef444422;border:1px solid #ef444444;color:#ef4444;border-radius:8px;padding:8px;font-size:12px;font-weight:800;cursor:pointer;';rejectBtn.textContent='❌ Rechazar';
+        rejectBtn.onclick=async()=>{
+          await updateDoc(doc(db,'creator_applications',app.id),{status:'rejected'});
+          await addDoc(collection(db,'notifications'),{toUserId:app.userId,type:'creator_rejected',fromUserId:'system',fromName:'Xelfi',message:'Tu solicitud al Programa de Creadores no ha sido aprobada en este momento. Puedes volver a intentarlo en 30 días.',read:false,createdAt:serverTimestamp()});
+          card.remove();
+        };
+        btnRow.appendChild(approveBtn);btnRow.appendChild(rejectBtn);card.appendChild(btnRow);
+      }
+      content.appendChild(card);
+    });
+  }catch(e){content.innerHTML='<div style="text-align:center;padding:30px;color:var(--mut);">Error: '+e.message+'</div>';}
 }
 
 async function openAdminRanking(){
@@ -3782,6 +3846,122 @@ async function openAdminRanking(){
 
   refresh.onclick=loadRanking;
   loadRanking();
+}
+
+// CREATOR PROGRAM
+function openCreatorApplication(){
+  let panel=document.getElementById('creator-app-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.id='creator-app-panel';
+  panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);';
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surf);border-bottom:1px solid var(--bor);flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';title.textContent='🎬 Programa de Creadores';
+  hdr.appendChild(back);hdr.appendChild(title);panel.appendChild(hdr);
+
+  const content=document.createElement('div');content.style.cssText='flex:1;overflow-y:auto;padding:16px;padding-bottom:100px;';
+
+  // Hero
+  const hero=document.createElement('div');hero.style.cssText='background:linear-gradient(135deg,#c060ff22,#9b35e811);border:1px solid #c060ff33;border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;';
+  hero.innerHTML='<div style="font-size:40px;margin-bottom:8px;">🎬</div><div style="font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:4px;">Únete al Programa de Creadores</div><div style="font-size:12px;color:var(--mut);line-height:1.6;">Accede a monetización, estadísticas avanzadas y la insignia de creador verificado.</div>';
+  content.appendChild(hero);
+
+  // Check if already applied
+  getDoc(doc(db,'creator_applications',S.cu.uid)).then(d=>{
+    if(d.exists()){
+      const status=d.data().status;
+      const statusBox=document.createElement('div');statusBox.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:16px;text-align:center;margin-bottom:16px;';
+      if(status==='pending')statusBox.innerHTML='⏳ Tu solicitud está siendo revisada. Te notificaremos pronto.';
+      else if(status==='approved')statusBox.innerHTML='✅ ¡Solicitud aprobada! Ya eres creador oficial de Xelfi.';
+      else if(status==='rejected')statusBox.innerHTML='❌ Tu solicitud fue rechazada. Puedes volver a intentarlo en 30 días.';
+      content.insertBefore(statusBox,content.children[1]);
+      if(status==='pending'||status==='approved')return;
+    }
+    buildCreatorForm(content);
+  }).catch(()=>buildCreatorForm(content));
+
+  panel.appendChild(content);
+  document.body.appendChild(panel);
+  setTimeout(()=>panel.style.transform='translateY(0)',10);
+  history.pushState(null,'',window.location.href);
+}
+
+function buildCreatorForm(content){
+  const CONTENT_TYPES=['Humor y entretenimiento','Educación y ciencia','Música y arte','Deporte y fitness','Tecnología','Cocina y gastronomía','Viajes y lifestyle','Noticias y actualidad','Gaming','Moda y belleza','Otro'];
+
+  const fields=[
+    {label:'Nombre completo real *',id:'cr-name',type:'text',ph:'Tu nombre y apellidos'},
+    {label:'Email de contacto *',id:'cr-email',type:'email',ph:'email@ejemplo.com'},
+    {label:'Número de teléfono *',id:'cr-phone',type:'tel',ph:'+34 600 000 000'},
+    {label:'Dirección *',id:'cr-address',type:'text',ph:'Ciudad, País'},
+    {label:'Describe tu contenido *',id:'cr-desc',type:'textarea',ph:'Cuéntanos qué tipo de contenido crearás, tu audiencia objetivo, frecuencia de publicación...'},
+    {label:'Tus redes sociales (opcional)',id:'cr-social',type:'text',ph:'Instagram, YouTube, TikTok...'},
+  ];
+
+  fields.forEach(f=>{
+    const lbl=document.createElement('label');lbl.className='ad-form-label';lbl.textContent=f.label;content.appendChild(lbl);
+    if(f.type==='textarea'){
+      const ta=document.createElement('textarea');ta.className='ad-form-input';ta.id=f.id;ta.placeholder=f.ph;ta.rows=3;ta.style.resize='none';content.appendChild(ta);
+    } else {
+      const inp=document.createElement('input');inp.className='ad-form-input';inp.id=f.id;inp.type=f.type;inp.placeholder=f.ph;content.appendChild(inp);
+    }
+  });
+
+  // Content type
+  const ctLbl=document.createElement('label');ctLbl.className='ad-form-label';ctLbl.textContent='Tipo de contenido *';content.appendChild(ctLbl);
+  const ctSel=document.createElement('select');ctSel.id='cr-type';ctSel.className='ad-form-input';
+  ctSel.innerHTML='<option value="">Selecciona...</option>'+CONTENT_TYPES.map(t=>'<option>'+t+'</option>').join('');
+  content.appendChild(ctSel);
+
+  // DNI photo
+  const dniLbl=document.createElement('label');dniLbl.className='ad-form-label';dniLbl.textContent='Foto del DNI o documento de identidad *';content.appendChild(dniLbl);
+  const dniNote=document.createElement('div');dniNote.style.cssText='font-size:11px;color:var(--mut);margin-bottom:8px;';dniNote.textContent='Tus datos serán tratados de forma confidencial y solo usados para verificar tu identidad.';content.appendChild(dniNote);
+  let dniData='';
+  const dniInp=document.createElement('input');dniInp.type='file';dniInp.accept='image/*';dniInp.style.cssText='font-size:13px;color:var(--mut);margin-bottom:8px;width:100%;';
+  const dniPrev=document.createElement('div');dniPrev.style.marginBottom='10px';
+  dniInp.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>{
+      const img=new Image();img.onload=()=>{
+        const cv=document.createElement('canvas');const mw=800;const rt=Math.min(1,mw/img.width);cv.width=Math.round(img.width*rt);cv.height=Math.round(img.height*rt);
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);dniData=cv.toDataURL('image/jpeg',0.7);
+        dniPrev.innerHTML='';const prev=document.createElement('img');prev.src=dniData;prev.style.cssText='width:100%;border-radius:8px;max-height:150px;object-fit:cover;';dniPrev.appendChild(prev);
+      };img.src=ev.target.result;
+    };r.readAsDataURL(f);
+  };
+  content.appendChild(dniInp);content.appendChild(dniPrev);
+
+  // Terms
+  const termsRow=document.createElement('div');termsRow.style.cssText='display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;';
+  const chk=document.createElement('input');chk.type='checkbox';chk.id='cr-terms';chk.style.marginTop='3px';
+  const termsLbl=document.createElement('label');termsLbl.htmlFor='cr-terms';termsLbl.style.cssText='font-size:12px;color:var(--mut);line-height:1.5;';
+  termsLbl.textContent='Acepto que mis datos serán revisados por el equipo de Xelfi para verificar mi identidad. Confirmo que el contenido que crearé cumple con las normas de la comunidad.';
+  termsRow.appendChild(chk);termsRow.appendChild(termsLbl);content.appendChild(termsRow);
+
+  // Submit
+  const submitBtn=document.createElement('button');submitBtn.className='btn';submitBtn.style.cssText='width:100%;background:linear-gradient(135deg,#c060ff,#9b35e8);';submitBtn.textContent='Enviar solicitud';
+  submitBtn.onclick=async()=>{
+    const name=document.getElementById('cr-name').value.trim();
+    const email=document.getElementById('cr-email').value.trim();
+    const phone=document.getElementById('cr-phone').value.trim();
+    const address=document.getElementById('cr-address').value.trim();
+    const desc=document.getElementById('cr-desc').value.trim();
+    const type=document.getElementById('cr-type').value;
+    const social=document.getElementById('cr-social').value.trim();
+    const terms=document.getElementById('cr-terms').checked;
+    if(!name||!email||!phone||!address||!desc||!type){alert('Rellena todos los campos obligatorios.');return;}
+    if(!dniData){alert('Adjunta una foto de tu documento de identidad.');return;}
+    if(!terms){alert('Debes aceptar los términos.');return;}
+    submitBtn.disabled=true;submitBtn.textContent='Enviando...';
+    try{
+      await setDoc(doc(db,'creator_applications',S.cu.uid),{
+        userId:S.cu.uid,name,email,phone,address,desc,type,social,dniPhoto:dniData,
+        xelfiHandle:S.me?.handle||'',xelfiName:S.me?.name||'',
+        status:'pending',createdAt:serverTimestamp()
+      });
+      content.innerHTML='<div style="text-align:center;padding:60px 20px;"><div style="font-size:48px;margin-bottom:16px;">✅</div><div style="font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:8px;">Solicitud enviada</div><div style="font-size:13px;color:var(--mut);">Revisaremos tu solicitud y te notificaremos en los próximos días.</div></div>';
+    }catch(e){alert('Error: '+e.message);submitBtn.disabled=false;submitBtn.textContent='Enviar solicitud';}
+  };
+  content.appendChild(submitBtn);
 }
 
 async function loadStoreAds(container){
