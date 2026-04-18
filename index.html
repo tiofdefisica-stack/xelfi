@@ -1191,7 +1191,14 @@ function renderPost(post){
     playCircle.textContent='▶';
     playOv.appendChild(playCircle);vWrap.appendChild(playOv);
     vWrap.onclick=()=>{
-      try{updateDoc(doc(db,'posts',post.id),{videoViews:increment(1)});}catch(e){}
+      // Track reach (unique viewers) - not author, not repeated
+      if(S.cu&&post.userId!==S.cu.uid){
+        const reachKey='xelfi-reach-'+post.id;
+        if(!sessionStorage.getItem(reachKey)){
+          sessionStorage.setItem(reachKey,'1');
+          try{updateDoc(doc(db,'posts',post.id),{videoReach:arrayUnion(S.cu.uid)});}catch(e){}
+        }
+      }
       window.open(post.videoUrl,'_blank');
     };
     card.appendChild(vWrap);
@@ -1199,7 +1206,8 @@ function renderPost(post){
     if(post.userId===S.cu?.uid||isAdmin()){
       const ins=document.createElement('button');
       ins.style.cssText='background:transparent;border:1px solid var(--bor);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--mut);cursor:pointer;margin-bottom:6px;font-family:Nunito Sans,sans-serif;display:flex;align-items:center;gap:6px;';
-      ins.innerHTML='📊 <span>'+(post.videoViews||0)+' visualizaciones</span>';
+      const _reach=(post.videoReach||[]).length;
+      ins.innerHTML='📊 <span>'+(post.videoViews||0)+' vistas · 👥 '+_reach+' alcance</span>';
       ins.onclick=()=>openVideoInsights(post);
       card.appendChild(ins);
     }
@@ -3580,8 +3588,11 @@ function openVideoInsights(post){
   const mins=Math.floor(secs/60);const s2=secs%60;
   const avgSecs=views>0?Math.round(secs/views):0;
   // Stats cards
+  const reach=(post.videoReach||[]).length;
   const stats=[
-    {icon:'👁️',label:'Visualizaciones totales',value:views},
+    {icon:'👥',label:'Alcance (personas únicas)',value:reach},
+    {icon:'👁️',label:'Visualizaciones (+80% vistas)',value:views},
+    {icon:'📊',label:'Ratio vista/alcance',value:reach>0?Math.round((views/reach)*100)+'%':'—'},
     {icon:'⏱️',label:'Tiempo total reproducido',value:mins+'m '+s2+'s'},
     {icon:'📈',label:'Media por visualización',value:avgSecs+'s'},
     {icon:'❤️',label:'Reacciones al post',value:(post.reactions?Object.values(post.reactions).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0)},
@@ -3760,7 +3771,8 @@ async function openAdminRanking(){
         top.appendChild(views);card.appendChild(top);
         // Stats row
         const stats=document.createElement('div');stats.style.cssText='display:flex;gap:12px;font-size:11px;color:var(--mut);border-top:1px solid var(--bor);padding-top:8px;flex-wrap:wrap;';
-        stats.innerHTML='⏱️ '+Math.floor(u.watchSecs/60)+'m '+(u.watchSecs%60)+'s · 📈 media '+(u.videos>0?Math.round(u.views/u.videos):0)+' vistas/vídeo';
+        const totalReach=allPosts.filter(p=>p.userId===u.uid).reduce((a,p)=>a+(p.videoReach||[]).length,0);
+        stats.innerHTML='👥 '+totalReach+' alcance · ⏱️ '+Math.floor(u.watchSecs/60)+'m '+(u.watchSecs%60)+'s · 📈 media '+(u.videos>0?Math.round(u.views/u.videos):0)+' vistas/vídeo';
         if(u.topVideo&&u.topVideo.content){const top2=document.createElement('span');top2.style.cssText='color:var(--acc2);';top2.textContent=' · 🏅 mejor: "'+u.topVideo.content.slice(0,30)+'"';stats.appendChild(top2);}
         card.appendChild(stats);
         content.appendChild(card);
