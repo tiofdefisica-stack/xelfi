@@ -1174,19 +1174,26 @@ function renderPost(post){
     if(ytM){const iframe=document.createElement('iframe');iframe.src='https://www.youtube.com/embed/'+ytM[1];iframe.style.cssText='width:100%;aspect-ratio:16/9;border:none;border-radius:10px;margin-bottom:8px;display:block;';iframe.allowFullscreen=true;card.appendChild(iframe);}
   }
   if(post.videoUrl){
-    const vid=document.createElement('video');
-    vid.controls=true;
-    vid.playsInline=true;
-    vid.preload='none';
-    vid.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:400px;display:block;margin-bottom:8px;background:#000;';
-    const src=document.createElement('source');
-    src.src=post.videoUrl;
-    src.type='video/mp4';
-    vid.appendChild(src);
-    vid.addEventListener('play',()=>{
+    // Video thumbnail with play button - opens in new tab
+    const vWrap=document.createElement('div');
+    vWrap.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;margin-bottom:8px;position:relative;background:#111;cursor:pointer;min-height:200px;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+    // Load thumbnail via video element hidden
+    const thumb=document.createElement('video');
+    thumb.src=post.videoUrl+'#t=0.5';thumb.preload='metadata';thumb.style.cssText='width:100%;max-height:400px;display:block;object-fit:cover;';
+    thumb.muted=true;
+    vWrap.appendChild(thumb);
+    // Play button overlay
+    const playOv=document.createElement('div');
+    playOv.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#00000044;';
+    const playCircle=document.createElement('div');
+    playCircle.style.cssText='width:64px;height:64px;border-radius:50%;background:#ffffffcc;display:flex;align-items:center;justify-content:center;font-size:26px;';
+    playCircle.textContent='▶';
+    playOv.appendChild(playCircle);vWrap.appendChild(playOv);
+    vWrap.onclick=()=>{
       try{updateDoc(doc(db,'posts',post.id),{videoViews:increment(1)});}catch(e){}
-    },{once:true});
-    card.appendChild(vid);
+      window.open(post.videoUrl,'_blank');
+    };
+    card.appendChild(vWrap);
     // Insights for owner
     if(post.userId===S.cu?.uid){
       const ins=document.createElement('div');ins.style.cssText='font-size:11px;color:var(--mut);margin-bottom:6px;cursor:pointer;';
