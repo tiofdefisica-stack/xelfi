@@ -1166,9 +1166,7 @@ function renderPost(post){
     const vid=document.createElement('video');vid.src=post.videoUrl;vid.controls=true;vid.playsInline=true;vid.setAttribute('webkit-playsinline','');vid.setAttribute('x5-playsinline','');vid.preload='auto';vid.muted=false;
     vid.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:400px;display:block;margin-bottom:8px;background:#000;';
     card.appendChild(vid);
-    // Pause when scrolled out of view
-    const vobs=new IntersectionObserver(en=>{en.forEach(e=>{if(!e.isIntersecting&&!vid.paused)vid.pause();});},{threshold:0.3});
-    vobs.observe(vid);
+
     // Track views and watch time
     let _vViewed=false;let _vStart=null;
     const _trackTime=()=>{if(_vStart){const s=Math.round((Date.now()-_vStart)/1000);if(s>0)try{updateDoc(doc(db,'posts',post.id),{videoWatchSeconds:increment(s)});}catch(e){}}_vStart=null;};
