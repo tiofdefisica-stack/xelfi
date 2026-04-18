@@ -3922,7 +3922,7 @@ function buildCreatorForm(content){
 
   // DNI photo
   const dniLbl=document.createElement('label');dniLbl.className='ad-form-label';dniLbl.textContent='Foto del DNI o documento de identidad *';content.appendChild(dniLbl);
-  const dniNote=document.createElement('div');dniNote.style.cssText='font-size:11px;color:var(--mut);margin-bottom:8px;';dniNote.textContent='Tus datos serán tratados de forma confidencial y solo usados para verificar tu identidad.';content.appendChild(dniNote);
+  const dniNote=document.createElement('div');dniNote.style.cssText='font-size:11px;color:var(--mut);margin-bottom:8px;';dniNote.innerHTML='Tus datos serán tratados de forma confidencial y solo usados para verificar tu identidad.<br><strong>Puedes tapar con tu mano o un objeto los datos que no quieras mostrar</strong> (número completo, domicilio...), siempre que sea visible tu foto, nombre y fecha de nacimiento.';content.appendChild(dniNote);
   let dniData='';
   const dniInp=document.createElement('input');dniInp.type='file';dniInp.accept='image/*';dniInp.style.cssText='font-size:13px;color:var(--mut);margin-bottom:8px;width:100%;';
   const dniPrev=document.createElement('div');dniPrev.style.marginBottom='10px';
