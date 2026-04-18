@@ -545,6 +545,15 @@ function buildRefCard(){
   const txt=document.createElement('p');txt.style.cssText='font-size:15px;line-height:1.6;margin-bottom:8px;';
   txt.style.whiteSpace='pre-wrap';txt.textContent=S.xelfiBanner||('¿Sabias que puedes ganar 200 XC por cada amigo que invites a Xelfi? '+(refs>0?'Ya has traido '+refs+' amigos y ganado '+(refs*200)+' XC. ':'')+'Comparte tu enlace unico y empieza a ganar 🎁');
   card.appendChild(txt);
+  // Always show share button
+  const shareActRow=document.createElement('div');shareActRow.style.cssText='display:flex;gap:6px;padding-top:10px;border-top:1px solid var(--bor);margin-top:8px;';
+  const shareBtn=document.createElement('button');shareBtn.className='ab';shareBtn.style.cssText='border-color:var(--acc);color:var(--acc2);font-weight:800;';shareBtn.textContent='📤 Enviar mi enlace de invitación';
+  shareBtn.onclick=async()=>{
+    const lnk=getRefLink();const stxt='¡Únete a Xelfi y gana XC! '+lnk;
+    if(navigator.share){try{await navigator.share({title:'Xelfi',text:stxt,url:lnk});}catch(e){}}
+    else{try{await navigator.clipboard.writeText(stxt);shareBtn.textContent='✓ Copiado!';setTimeout(()=>shareBtn.textContent='📤 Enviar mi enlace de invitación',2000);}catch(e){alert(lnk);}}
+  };
+  shareActRow.appendChild(shareBtn);card.appendChild(shareActRow);
   // Link and share - only show if no custom banner
   if(!S.xelfiBanner){
     const link=document.createElement('div');link.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:9px;padding:8px 11px;font-size:11px;color:var(--acc2);font-weight:700;word-break:break-all;margin-bottom:10px;';link.textContent=getRefLink();card.appendChild(link);
