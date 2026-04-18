@@ -1062,7 +1062,7 @@ function renderComposer(){
       card.insertBefore(vrm,act);card.insertBefore(vprev,vrm);
     };
   };
-  const vb=document.createElement('button');vb.className='btn-o';vb.style.padding='7px 11px';vb.textContent='🎬 Vídeo';vb.onclick=()=>vfi.click();card.appendChild(vfi);
+  const vb=document.createElement('button');vb.className='btn-o';vb.style.padding='7px 11px';vb.textContent='🎬 Vídeo';vb.onclick=()=>vfi.click();act.appendChild(vfi);
   const ps=document.createElement('select');ps.style.cssText='background:var(--surf);border:1.5px solid var(--bor);border-radius:8px;padding:6px 9px;color:var(--txt);font-size:12px;width:auto;outline:none;cursor:pointer;';ps.innerHTML='<option value="public">🌐 Publico</option><option value="friends">👥 Amigos</option><option value="private">🔒 Solo yo</option>';ps.value=S.npv;ps.onchange=e=>S.npv=e.target.value;
   const pb=document.createElement('button');pb.className='btn';pb.style.cssText='padding:8px 14px;font-size:13px;';pb.textContent='Publicar';
   pb.onclick=async()=>{if(!S.np.trim()&&(!S.nimgs||S.nimgs.length===0))return;
@@ -1166,11 +1166,6 @@ function renderPost(post){
     const vid=document.createElement('video');
     vid.src=post.videoUrl;vid.controls=true;vid.playsInline=true;
     vid.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:400px;object-fit:cover;display:block;margin-bottom:8px;background:#000;';
-    card.appendChild(vid);
-  }
-  if(post.videoUrl){
-    const vid=document.createElement('video');vid.src=post.videoUrl;vid.controls=true;vid.playsInline=true;
-    vid.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:400px;display:block;margin-bottom:8px;background:#000;';
     card.appendChild(vid);
   }
   if(post.image&&!post._showEmbedded){const img=document.createElement('img');img.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:420px;object-fit:cover;display:block;margin-bottom:'+(post.images?'0':'8px')+';cursor:pointer;';
