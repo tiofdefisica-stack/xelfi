@@ -583,6 +583,13 @@ async function callXelfiAI(question,postId,imageUrl){
     if(snap.exists()){const cmts=snap.data().comments||[];await updateDoc(doc(db,'posts',postId),{comments:[...cmts,{userId:'xelfi_ai',text:reply,createdAt:new Date().toISOString(),isAI:true}]});}
   }catch(e){await updateDoc(doc(db,'posts',postId),{comments:arrayUnion({userId:'xelfi_ai',text:'Error conectando con la IA: '+e.message,createdAt:new Date().toISOString(),isAI:true})});}
 }
+async function sendFriendReq(toUid){
+  try{
+    const ref=await addDoc(collection(db,'friendships'),{from:S.cu.uid,to:toUid,status:'pending',createdAt:serverTimestamp()});
+    await addNotif(toUid,'freq',ref.id);
+  }catch(e){alert('Error: '+e.message);}
+}
+
 async function checkAI(post){if(!post.content)return;if(post.content.toLowerCase().includes('@xelfi')&&!post.aiProcessed){await updateDoc(doc(db,'posts',post.id),{aiProcessed:true});await callXelfiAI(post.content.replace(/@xelfi/gi,'').trim(),post.id,null);}}
 
 // PROMO
