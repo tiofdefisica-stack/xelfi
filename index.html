@@ -1173,6 +1173,7 @@ function renderPost(post){
     const ytM=post.content.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
     if(ytM){const iframe=document.createElement('iframe');iframe.src='https://www.youtube.com/embed/'+ytM[1];iframe.style.cssText='width:100%;aspect-ratio:16/9;border:none;border-radius:10px;margin-bottom:8px;display:block;';iframe.allowFullscreen=true;card.appendChild(iframe);}
   }
+
   if(post.videoUrl){
     // Video thumbnail with play button - opens in new tab
     const vWrap=document.createElement('div');
@@ -1194,10 +1195,12 @@ function renderPost(post){
       window.open(post.videoUrl,'_blank');
     };
     card.appendChild(vWrap);
-    // Insights for owner
-    if(post.userId===S.cu?.uid){
-      const ins=document.createElement('div');ins.style.cssText='font-size:11px;color:var(--mut);margin-bottom:6px;cursor:pointer;';
-      ins.textContent='📊 '+(post.videoViews||0)+' visualizaciones';
+    // Insights for owner and admin
+    if(post.userId===S.cu?.uid||isAdmin()){
+      const ins=document.createElement('button');
+      ins.style.cssText='background:transparent;border:1px solid var(--bor);border-radius:8px;padding:5px 12px;font-size:12px;color:var(--mut);cursor:pointer;margin-bottom:6px;font-family:Nunito Sans,sans-serif;display:flex;align-items:center;gap:6px;';
+      ins.innerHTML='📊 <span>'+(post.videoViews||0)+' visualizaciones</span>';
+      ins.onclick=()=>openVideoInsights(post);
       card.appendChild(ins);
     }
   }
@@ -3548,6 +3551,47 @@ async function openSinglePost(postId){
     // Scroll to comments after render
     setTimeout(()=>{const cmtSection=postCard.querySelector('.comments-section');if(cmtSection)cmtSection.scrollIntoView({behavior:'smooth',block:'start'});},400);
   }catch(e){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Error cargando post</div>';}
+}
+
+function openVideoInsights(post){
+  let panel=document.getElementById('video-insights-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.id='video-insights-panel';
+  panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);';
+  // Header
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surf);border-bottom:1px solid var(--bor);flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';title.textContent='📊 Estadísticas del vídeo';
+  hdr.appendChild(back);hdr.appendChild(title);panel.appendChild(hdr);
+  // Content
+  const content=document.createElement('div');content.style.cssText='flex:1;overflow-y:auto;padding:20px 16px;';
+  const views=post.videoViews||0;
+  const secs=post.videoWatchSeconds||0;
+  const mins=Math.floor(secs/60);const s2=secs%60;
+  const avgSecs=views>0?Math.round(secs/views):0;
+  // Stats cards
+  const stats=[
+    {icon:'👁️',label:'Visualizaciones totales',value:views},
+    {icon:'⏱️',label:'Tiempo total reproducido',value:mins+'m '+s2+'s'},
+    {icon:'📈',label:'Media por visualización',value:avgSecs+'s'},
+    {icon:'❤️',label:'Reacciones al post',value:(post.reactions?Object.values(post.reactions).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0)},
+    {icon:'💬',label:'Comentarios',value:(post.comments||[]).length},
+  ];
+  stats.forEach(s=>{
+    const card=document.createElement('div');card.style.cssText='background:var(--card);border:1px solid var(--bor);border-radius:14px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;';
+    const ico=document.createElement('div');ico.style.cssText='font-size:28px;';ico.textContent=s.icon;
+    const info=document.createElement('div');
+    const val=document.createElement('div');val.style.cssText='font-weight:900;font-size:22px;font-family:Nunito,sans-serif;color:var(--txt);';val.textContent=s.value;
+    const lbl=document.createElement('div');lbl.style.cssText='font-size:12px;color:var(--mut);';lbl.textContent=s.label;
+    info.appendChild(val);info.appendChild(lbl);card.appendChild(ico);card.appendChild(info);content.appendChild(card);
+  });
+  // Post preview
+  const prev=document.createElement('div');prev.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:12px;margin-top:8px;font-size:12px;color:var(--mut);';
+  prev.textContent='Publicado: '+(post.createdAt?.toDate?.()?.toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'})||'—');
+  content.appendChild(prev);
+  panel.appendChild(content);
+  document.body.appendChild(panel);
+  setTimeout(()=>panel.style.transform='translateY(0)',10);
+  history.pushState(null,'',window.location.href);
 }
 
 async function loadStoreAds(container){
