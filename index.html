@@ -1086,7 +1086,7 @@ function renderComposer(){
       const udat=usnap.data()||{};
       const vday=udat.videoUploadDay||'';
       const vcnt=vday===today?(udat.videoUploadCount||0):0;
-      if(vcnt>=5){alert('Límite de 5 vídeos al día alcanzado');pb.disabled=false;pb.textContent='Publicar';return;}
+      if(vcnt>=2){alert('Límite de 2 vídeos al día alcanzado');pb.disabled=false;pb.textContent='Publicar';return;}
       pb.textContent='Subiendo vídeo...';
       try{
         const vRef=ref(storage,'videos/'+S.cu.uid+'/'+Date.now()+'.mp4');
