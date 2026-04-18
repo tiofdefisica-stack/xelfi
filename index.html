@@ -1433,6 +1433,10 @@ async function renderProf(app){
   if(isOwnCheck||isAdmin()){
     const hbar=buildHealthBar(prof.infractions||0);hbar.style.margin='8px 0';main.appendChild(hbar);
   }
+  // Insights button for own profile
+  if(isOwnCheck){
+    const insBtn=document.createElement('button');insBtn.className='btn-o';insBtn.style.cssText='width:100%;margin-bottom:10px;font-size:13px;';insBtn.textContent='📊 Mis estadísticas';insBtn.onclick=openUserInsights;main.appendChild(insBtn);
+  }
   const pts=prof.points||0;const xcoins=prof.xcoins||0;
   const lvlD=document.createElement('div');lvlD.style.cssText='display:inline-block;background:#9b35e818;border:1px solid #9b35e833;border-radius:16px;padding:2px 9px;font-size:11px;font-weight:800;font-family:Nunito,sans-serif;color:var(--acc2);margin-bottom:5px;';lvlD.textContent=getLevel(pts)+' · '+pts+' pts';
   const xcRow=document.createElement('div');xcRow.style.cssText='display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,#1a0a2e,#2d0a4e);border-radius:10px;padding:7px 10px;margin-bottom:6px;cursor:pointer;';xcRow.appendChild(coinImg(22));const xcInf=document.createElement('div');xcInf.innerHTML='<div style="font-size:15px;font-weight:900;color:#fbbf24;font-family:Nunito,sans-serif;">'+xcoins+' XC</div><div style="font-size:10px;color:#7a6a9a;">Xelfi Coins</div>';xcRow.appendChild(xcInf);if(isOwn){const shopB=document.createElement('button');shopB.className='btn';shopB.style.cssText='margin-left:auto;font-size:11px;padding:5px 10px;';shopB.textContent='🛍️ Tienda';shopB.onclick=()=>{S.view='store';render();};xcRow.appendChild(shopB);
@@ -3592,6 +3596,98 @@ function openVideoInsights(post){
   document.body.appendChild(panel);
   setTimeout(()=>panel.style.transform='translateY(0)',10);
   history.pushState(null,'',window.location.href);
+}
+
+async function openUserInsights(){
+  let panel=document.getElementById('user-insights-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.id='user-insights-panel';
+  panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);';
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surf);border-bottom:1px solid var(--bor);flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';title.textContent='📊 Mis estadísticas';
+  hdr.appendChild(back);hdr.appendChild(title);panel.appendChild(hdr);
+  const content=document.createElement('div');content.style.cssText='flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;';
+  content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Cargando estadísticas...</div>';
+  panel.appendChild(content);
+  document.body.appendChild(panel);
+  setTimeout(()=>panel.style.transform='translateY(0)',10);
+  history.pushState(null,'',window.location.href);
+
+  // Load all user posts
+  try{
+    const now=new Date();
+    const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+    const sn=await getDocs(query(collection(db,'posts'),orderBy('createdAt','desc')));
+    const myPosts=sn.docs.filter(d=>d.data().userId===S.cu.uid).map(d=>({id:d.id,...d.data()}));
+    const monthPosts=myPosts.filter(p=>p.createdAt?.toDate?.()>=monthStart);
+    const videoPosts=myPosts.filter(p=>p.videoUrl);
+    const monthVideos=videoPosts.filter(p=>p.createdAt?.toDate?.()>=monthStart);
+
+    // Totals
+    const totalViews=videoPosts.reduce((a,p)=>a+(p.videoViews||0),0);
+    const monthViews=monthVideos.reduce((a,p)=>a+(p.videoViews||0),0);
+    const totalWatchSecs=videoPosts.reduce((a,p)=>a+(p.videoWatchSeconds||0),0);
+    const monthWatchSecs=monthVideos.reduce((a,p)=>a+(p.videoWatchSeconds||0),0);
+    const totalLikes=myPosts.reduce((a,p)=>a+Object.values(p.reactions||{}).reduce((b,v)=>b+(Array.isArray(v)?v.length:0),0),0);
+    const totalComments=myPosts.reduce((a,p)=>a+(p.comments||[]).length,0);
+    const totalReposts=myPosts.reduce((a,p)=>a+(p.reposts||[]).length,0);
+
+    content.innerHTML='';
+
+    // Month header
+    const monthName=now.toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+    const mhdr=document.createElement('div');mhdr.style.cssText='font-weight:900;font-size:13px;color:var(--mut);letter-spacing:.5px;font-family:Nunito,sans-serif;margin-bottom:12px;text-transform:uppercase;';mhdr.textContent='Este mes — '+monthName;content.appendChild(mhdr);
+
+    // Month stats
+    const monthStats=[
+      {icon:'📹',label:'Vídeos publicados',value:monthVideos.length},
+      {icon:'👁️',label:'Visualizaciones de vídeo',value:monthViews},
+      {icon:'⏱️',label:'Tiempo reproducido',value:Math.floor(monthWatchSecs/60)+'m '+(monthWatchSecs%60)+'s'},
+      {icon:'📝',label:'Posts publicados',value:monthPosts.length},
+    ];
+    monthStats.forEach(s=>content.appendChild(buildStatCard(s)));
+
+    // Divider
+    const div1=document.createElement('div');div1.style.cssText='font-weight:900;font-size:13px;color:var(--mut);letter-spacing:.5px;font-family:Nunito,sans-serif;margin:16px 0 12px;text-transform:uppercase;';div1.textContent='Total histórico';content.appendChild(div1);
+
+    // All time stats
+    const allStats=[
+      {icon:'📹',label:'Vídeos totales',value:videoPosts.length},
+      {icon:'👁️',label:'Visualizaciones totales',value:totalViews},
+      {icon:'⏱️',label:'Tiempo total reproducido',value:Math.floor(totalWatchSecs/60)+'m '+(totalWatchSecs%60)+'s'},
+      {icon:'📈',label:'Media de vistas por vídeo',value:videoPosts.length>0?Math.round(totalViews/videoPosts.length):0},
+      {icon:'❤️',label:'Reacciones recibidas',value:totalLikes},
+      {icon:'💬',label:'Comentarios recibidos',value:totalComments},
+      {icon:'🔄',label:'Reposts recibidos',value:totalReposts},
+      {icon:'📝',label:'Posts totales',value:myPosts.length},
+    ];
+    allStats.forEach(s=>content.appendChild(buildStatCard(s)));
+
+    // Top videos
+    if(videoPosts.length>0){
+      const div2=document.createElement('div');div2.style.cssText='font-weight:900;font-size:13px;color:var(--mut);letter-spacing:.5px;font-family:Nunito,sans-serif;margin:16px 0 12px;text-transform:uppercase;';div2.textContent='🏆 Vídeos más vistos';content.appendChild(div2);
+      const topVids=videoPosts.sort((a,b)=>(b.videoViews||0)-(a.videoViews||0)).slice(0,5);
+      topVids.forEach((p,i)=>{
+        const row=document.createElement('div');row.style.cssText='background:var(--card);border:1px solid var(--bor);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px;';
+        const num=document.createElement('div');num.style.cssText='font-size:20px;font-weight:900;font-family:Nunito,sans-serif;color:var(--acc);min-width:28px;';num.textContent='#'+(i+1);
+        const info=document.createElement('div');info.style.flex='1';
+        const txt=document.createElement('div');txt.style.cssText='font-size:13px;color:var(--txt);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';txt.textContent=p.content||'(sin texto)';
+        const meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--mut);margin-top:2px;';
+        meta.textContent='👁️ '+(p.videoViews||0)+' · ⏱️ '+Math.floor((p.videoWatchSeconds||0)/60)+'m '+((p.videoWatchSeconds||0)%60)+'s';
+        info.appendChild(txt);info.appendChild(meta);row.appendChild(num);row.appendChild(info);content.appendChild(row);
+      });
+    }
+  }catch(e){content.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut);">Error cargando estadísticas</div>';}
+}
+
+function buildStatCard(s){
+  const card=document.createElement('div');card.style.cssText='background:var(--card);border:1px solid var(--bor);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;';
+  const ico=document.createElement('div');ico.style.cssText='font-size:26px;';ico.textContent=s.icon;
+  const info=document.createElement('div');
+  const val=document.createElement('div');val.style.cssText='font-weight:900;font-size:20px;font-family:Nunito,sans-serif;color:var(--txt);';val.textContent=s.value;
+  const lbl=document.createElement('div');lbl.style.cssText='font-size:12px;color:var(--mut);';lbl.textContent=s.label;
+  info.appendChild(val);info.appendChild(lbl);card.appendChild(ico);card.appendChild(info);
+  return card;
 }
 
 async function loadStoreAds(container){
