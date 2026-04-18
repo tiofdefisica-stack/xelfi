@@ -1226,6 +1226,23 @@ function buildCmts(post){
     if(c.audio){const ap=document.createElement('div');ap.style.cssText='display:flex;align-items:center;gap:7px;background:var(--surf);border-radius:18px;padding:5px 11px;margin-top:4px;max-width:190px;';const pb2=document.createElement('button');pb2.style.cssText='background:var(--acc);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;';pb2.textContent='▶';const aud=new Audio(c.audio);aud.onended=()=>pb2.textContent='▶';pb2.onclick=()=>{if(aud.paused){aud.play();pb2.textContent='⏸';}else{aud.pause();pb2.textContent='▶';}};ap.appendChild(pb2);const tl=document.createElement('span');tl.style.cssText='font-size:11px;color:var(--mut);';tl.textContent='Audio';ap.appendChild(tl);cb.appendChild(ap);}
     const bts=document.createElement('div');bts.style.cssText='display:flex;gap:7px;margin-top:3px;';
     const rep=document.createElement('button');rep.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:11px;font-weight:700;';rep.textContent='Responder';rep.onclick=()=>{const inp=document.getElementById('ci-'+post.id);if(inp){inp.value='@'+(cu.handle||'').replace('@','')+' ';inp.focus();}};bts.appendChild(rep);
+    // Heart reaction on comment
+    const myHeart=Array.isArray(c.hearts)&&c.hearts.includes(S.cu?.uid);
+    const heartBtn=document.createElement('button');heartBtn.style.cssText='background:transparent;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:2px;color:'+(myHeart?'#ff4d6d':'var(--mut)')+';font-weight:700;';
+    const heartCount=Array.isArray(c.hearts)?c.hearts.length:0;
+    heartBtn.textContent='❤️'+(heartCount>0?' '+heartCount:'');
+    heartBtn.onclick=async()=>{
+      const comments=post.comments||[];
+      const idx2=comments.indexOf(c);if(idx2<0)return;
+      const updated=[...comments];
+      const hearts=Array.isArray(updated[idx2].hearts)?[...updated[idx2].hearts]:[];
+      if(hearts.includes(S.cu.uid)){hearts.splice(hearts.indexOf(S.cu.uid),1);}else{hearts.push(S.cu.uid);}
+      updated[idx2]={...updated[idx2],hearts};
+      try{await updateDoc(doc(db,'posts',post.id),{comments:updated});
+      heartBtn.style.color=hearts.includes(S.cu.uid)?'#ff4d6d':'var(--mut)';
+      heartBtn.textContent='❤️'+(hearts.length>0?' '+hearts.length:'');}catch(e){}
+    };
+    bts.appendChild(heartBtn);
     if(c.userId===S.cu.uid){
       // Edit comment
       const ec=document.createElement('button');ec.style.cssText='background:transparent;border:none;color:var(--mut);cursor:pointer;font-size:11px;margin-right:6px;';ec.textContent='Editar';
