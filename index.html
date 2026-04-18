@@ -1179,11 +1179,7 @@ function renderPost(post){
       const ins=document.createElement('div');ins.style.cssText='font-size:11px;color:var(--mut);margin-bottom:6px;cursor:pointer;';
       const v=post.videoViews||0;const s=post.videoWatchSeconds||0;
       ins.textContent='📊 '+v+' visualizaciones · '+Math.floor(s/60)+'m'+( s%60)+'s reproducidos';
-      ins.onclick=()=>alert('📊 Estadísticas
-
-👁️ Visualizaciones: '+v+'
-⏱️ Tiempo total: '+Math.floor(s/60)+'m '+(s%60)+'s
-📈 Media por vista: '+(v>0?Math.round(s/v)+'s':'—'));
+      ins.onclick=()=>alert('Estadisticas - Visualizaciones: '+v+' - Tiempo: '+Math.floor(s/60)+'m '+(s%60)+'s - Media: '+(v>0?Math.round(s/v)+'s':'no disponible'));
       card.appendChild(ins);
     }
   }
