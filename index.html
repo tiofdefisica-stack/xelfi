@@ -419,6 +419,14 @@ button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
 <script>
 if(localStorage.getItem('xelfi-theme')==='dark'){document.addEventListener('DOMContentLoaded',()=>document.body.classList.remove('light'));}
 </script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-X1395XCX0L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-X1395XCX0L');
+</script>
 </head>
 <body class="light">
 <div id="app"><div class="load" style="padding:80px;font-size:16px;text-align:center;">Cargando Xelfi...</div></div>
@@ -820,6 +828,8 @@ function render(){
   }
   // Save current view to sessionStorage
   try{sessionStorage.setItem('xelfi-view',S.view);if(S.pid)sessionStorage.setItem('xelfi-pid',S.pid);if(S.chatWith)sessionStorage.setItem('xelfi-chatWith',S.chatWith);}catch(e){}
+  // Track pageview in Google Analytics
+  try{if(typeof gtag!=='undefined')gtag('event','page_view',{page_title:S.view,page_location:window.location.href+'#'+S.view});}catch(e){}
   const app=document.getElementById('app');app.innerHTML='';
   // Show store bubble only on feed
   setTimeout(()=>{
