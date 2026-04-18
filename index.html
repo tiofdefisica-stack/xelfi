@@ -1985,6 +1985,7 @@ async function renderSettings(app){
   const sNormas=sec2('Comunidad');
   sNormas.appendChild(row2('📜','Normas de la comunidad',()=>openNormas()));
   sNormas.appendChild(row2('🎬','Programa de Creadores',()=>openCreatorApplication()));
+  sNormas.appendChild(row2('📋','Políticas para Creadores',()=>openCreatorPolicies()));
   sNormas.appendChild(row2('⚑','Cómo funciona el sistema de denuncias',()=>openNormas()));
   main.appendChild(sNormas);
   const sInst=sec2('App');sInst.appendChild(row2('📲','Instalar Xelfi en tu movil',()=>installApp()));main.appendChild(sInst);
@@ -3849,7 +3850,7 @@ async function openAdminRanking(){
 }
 
 // CREATOR PROGRAM
-function openCreatorApplication(){
+async function openCreatorApplication(){
   let panel=document.getElementById('creator-app-panel');if(panel)panel.remove();
   panel=document.createElement('div');panel.id='creator-app-panel';
   panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);';
@@ -3865,6 +3866,13 @@ function openCreatorApplication(){
   hero.innerHTML='<div style="font-size:40px;margin-bottom:8px;">🎬</div><div style="font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:4px;">Únete al Programa de Creadores</div><div style="font-size:12px;color:var(--mut);line-height:1.6;">Accede a monetización, estadísticas avanzadas y la insignia de creador verificado.</div>';
   content.appendChild(hero);
 
+  // Check minimum 20 contacts
+  const friendSnap=await getDocs(collection(db,'friendships'));
+  const friendCount=friendSnap.docs.filter(d=>{const f=d.data();return f.status==='accepted'&&(f.from===S.cu.uid||f.to===S.cu.uid);}).length;
+  if(friendCount<20){
+    content.innerHTML='<div style="text-align:center;padding:40px 20px;"><div style="font-size:48px;margin-bottom:16px;">👥</div><div style="font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:8px;">Necesitas más contactos</div><div style="font-size:13px;color:var(--mut);line-height:1.6;">Para acceder al Programa de Creadores necesitas al menos <strong>20 contactos</strong> en Xelfi.<br><br>Actualmente tienes <strong>'+friendCount+' contacto'+(friendCount!==1?'s':'')+'</strong>. ¡Sigue conectando con la comunidad!</div></div>';
+    panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.style.transform='translateY(0)',10);return;
+  }
   // Check if already applied
   getDoc(doc(db,'creator_applications',S.cu.uid)).then(d=>{
     if(d.exists()){
@@ -3934,7 +3942,7 @@ function buildCreatorForm(content){
   const termsRow=document.createElement('div');termsRow.style.cssText='display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;';
   const chk=document.createElement('input');chk.type='checkbox';chk.id='cr-terms';chk.style.marginTop='3px';
   const termsLbl=document.createElement('label');termsLbl.htmlFor='cr-terms';termsLbl.style.cssText='font-size:12px;color:var(--mut);line-height:1.5;';
-  termsLbl.textContent='Acepto que mis datos serán revisados por el equipo de Xelfi para verificar mi identidad. Confirmo que el contenido que crearé cumple con las normas de la comunidad.';
+  termsLbl.innerHTML='Acepto que mis datos serán revisados por el equipo de Xelfi para verificar mi identidad. Confirmo que el contenido que crearé cumple con las <a href="#" onclick="openCreatorPolicies();return false;" style="color:var(--acc2);">políticas para creadores</a>.';
   termsRow.appendChild(chk);termsRow.appendChild(termsLbl);content.appendChild(termsRow);
 
   // Submit
@@ -3962,6 +3970,45 @@ function buildCreatorForm(content){
     }catch(e){alert('Error: '+e.message);submitBtn.disabled=false;submitBtn.textContent='Enviar solicitud';}
   };
   content.appendChild(submitBtn);
+}
+
+function openCreatorPolicies(){
+  let panel=document.getElementById('creator-policies-panel');if(panel)panel.remove();
+  panel=document.createElement('div');panel.id='creator-policies-panel';
+  panel.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:2000;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);overflow-y:auto;';
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--surf);border-bottom:1px solid var(--bor);position:sticky;top:0;z-index:10;flex-shrink:0;';
+  const back=document.createElement('button');back.style.cssText='background:transparent;border:none;font-size:22px;cursor:pointer;color:var(--txt);';back.textContent='←';back.onclick=()=>panel.remove();
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:15px;font-family:Nunito,sans-serif;';title.textContent='🎬 Políticas para Creadores';
+  hdr.appendChild(back);hdr.appendChild(title);panel.appendChild(hdr);
+
+  const content=document.createElement('div');content.style.cssText='padding:16px;max-width:600px;margin:0 auto;padding-bottom:60px;';
+  const intro=document.createElement('div');intro.style.cssText='background:linear-gradient(135deg,#c060ff22,#9b35e811);border:1px solid #c060ff33;border-radius:14px;padding:14px;margin-bottom:20px;font-size:13px;line-height:1.7;color:var(--txt);';
+  intro.innerHTML='<strong>Bienvenido al Programa de Creadores de Xelfi.</strong> Estas políticas garantizan una comunidad sana y profesional. Incumplirlas puede resultar en la retirada del estatus de creador.';
+  content.appendChild(intro);
+
+  const policies=[
+    {emoji:'👥',title:'Requisito mínimo de comunidad',text:'Para acceder al programa necesitas un mínimo de 20 contactos en Xelfi. Esto garantiza que ya formas parte activa de la comunidad.'},
+    {emoji:'✅',title:'Contenido original',text:'Todo el contenido que publiques debe ser de tu autoría o disponer de los derechos necesarios para su publicación. Está prohibido copiar contenido de otros creadores sin atribución.'},
+    {emoji:'🚫',title:'Contenido prohibido',text:'No se permite contenido sexual explícito, violento, discriminatorio, que incite al odio, promueva actividades ilegales o que ponga en riesgo a menores de edad.'},
+    {emoji:'📢',title:'Transparencia publicitaria',text:'Si recibes compensación por mencionar productos o marcas, debes indicarlo claramente en la publicación. El contenido patrocinado encubierto está prohibido.'},
+    {emoji:'⚖️',title:'Información veraz',text:'Como creador tienes mayor alcance y responsabilidad. No publiques información falsa, bulos o noticias sin contrastar. El impacto de la desinformación es mayor con una audiencia amplia.'},
+    {emoji:'🔒',title:'Privacidad ajena',text:'No compartas datos personales de otras personas sin su consentimiento explícito. Respeta especialmente la privacidad de menores.'},
+    {emoji:'💰',title:'Monetización',text:'Los ingresos generados a través de Xelfi estarán sujetos a los términos de monetización vigentes. Xelfi se reserva el derecho de modificar los porcentajes con previo aviso de 30 días.'},
+    {emoji:'📊',title:'Actividad mínima',text:'Para mantener el estatus de creador activo se requiere publicar al menos 2 vídeos o posts al mes. La inactividad prolongada puede resultar en la suspensión temporal del programa.'},
+    {emoji:'🤝',title:'Respeto a la comunidad',text:'Los creadores son embajadores de Xelfi. Se espera un comportamiento ejemplar tanto dentro como fuera de la plataforma. El acoso, la discriminación o el comportamiento tóxico resultará en expulsión inmediata del programa.'},
+    {emoji:'⚠️',title:'Sistema de infracciones',text:'Las infracciones de estas políticas se acumulan. Tres infracciones leves o una grave resultan en la retirada del estatus de creador. Xelfi notificará al creador en cada caso con el motivo detallado.'},
+  ];
+
+  policies.forEach(p=>{
+    const sec=document.createElement('div');sec.style.cssText='margin-bottom:16px;';
+    const t=document.createElement('div');t.style.cssText='font-weight:900;font-size:14px;font-family:Nunito,sans-serif;margin-bottom:6px;display:flex;align-items:center;gap:8px;';t.textContent=p.emoji+' '+p.title;
+    const txt=document.createElement('div');txt.style.cssText='font-size:13px;line-height:1.7;color:var(--mut);';txt.textContent=p.text;
+    sec.appendChild(t);sec.appendChild(txt);content.appendChild(sec);
+  });
+
+  const footer=document.createElement('div');footer.style.cssText='text-align:center;padding:20px;color:var(--mut);font-size:12px;border-top:1px solid var(--bor);margin-top:16px;';footer.textContent='Última actualización: Abril 2026 · Xelfi';content.appendChild(footer);
+  panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.classList.add('open'),10);
+  panel.style.transform='translateY(0)';
 }
 
 async function loadStoreAds(container){
