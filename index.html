@@ -1087,13 +1087,20 @@ function renderComposer(){
       if(vcnt>=2&&!isAdmin()){alert('Límite de 2 vídeos al día alcanzado');pb.disabled=false;pb.textContent='Publicar';return;}
       pb.textContent='Subiendo vídeo...';
       try{
-        const fd=new FormData();
-        fd.append('video',_vFile,'video.mp4');
-        fd.append('userId',S.cu.uid);
-        const vRes=await fetch('https://xelfi-ai.tiofdefisica.workers.dev/upload-video',{method:'POST',body:fd});
-        const vData=await vRes.json();
-        if(!vData.url)throw new Error(vData.error||'Error al subir');
-        _videoUrl=vData.url;
+        // Get upload key from Worker
+        const initRes=await fetch('https://xelfi-ai.tiofdefisica.workers.dev/get-upload-url',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({userId:S.cu.uid})
+        });
+        const initData=await initRes.json();
+        if(!initData.publicUrl)throw new Error(initData.error||'Error al iniciar subida');
+        // Upload directly to R2 via Cloudflare API
+        const uploadRes=await fetch(
+          'https://api.cloudflare.com/client/v4/accounts/a4f881781a5a333bb0a4087381d5215b/r2/buckets/xelfi-videos/objects/'+initData.key,
+          {method:'PUT',headers:{'Authorization':'Bearer cfut_wjlv7c41bKboUdVaa7ZaEv06P77VEi8mSMN1Th0j3c366d13','Content-Type':'video/mp4'},body:_vFile}
+        );
+        if(!uploadRes.ok)throw new Error('Error subiendo a R2: '+uploadRes.status);
+        _videoUrl=initData.publicUrl;
         await updateDoc(doc(db,'users',S.cu.uid),{videoUploadDay:today,videoUploadCount:vcnt+1});
         _vFile=null;
         card.querySelector('.vprev-label')?.remove();
