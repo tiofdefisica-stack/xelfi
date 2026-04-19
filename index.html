@@ -3885,12 +3885,14 @@ async function openCreatorApplication(){
   hero.innerHTML='<div style="font-size:40px;margin-bottom:8px;">🎬</div><div style="font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:4px;">Únete al Programa de Creadores</div><div style="font-size:12px;color:var(--mut);line-height:1.6;">Accede a monetización, estadísticas avanzadas y la insignia de creador verificado.</div>';
   content.appendChild(hero);
 
-  // Check minimum 20 contacts
+  // Check contacts - show notice but don't block
   const friendSnap=await getDocs(collection(db,'friendships'));
   const friendCount=friendSnap.docs.filter(d=>{const f=d.data();return f.status==='accepted'&&(f.from===S.cu.uid||f.to===S.cu.uid);}).length;
   if(friendCount<20){
-    content.innerHTML='<div style="text-align:center;padding:40px 20px;"><div style="font-size:48px;margin-bottom:16px;">👥</div><div style="font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:8px;">Necesitas más contactos</div><div style="font-size:13px;color:var(--mut);line-height:1.6;">Para acceder al Programa de Creadores necesitas al menos <strong>20 contactos</strong> en Xelfi.<br><br>Actualmente tienes <strong>'+friendCount+' contacto'+(friendCount!==1?'s':'')+'</strong>. ¡Sigue conectando con la comunidad!</div></div>';
-    panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.style.transform='translateY(0)',10);return;
+    const notice=document.createElement('div');
+    notice.style.cssText='background:#fbbf2422;border:1px solid #fbbf2466;border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px;line-height:1.6;';
+    notice.innerHTML='⚠️ <strong>Tienes '+friendCount+' contacto'+(friendCount!==1?'s':'')+' de los 20 recomendados.</strong> Puedes enviar tu solicitud igualmente, pero te recomendamos que primero leas las condiciones y te asegures de crear contenido de calidad para aumentar tus posibilidades de ser aprobado. <br><br><button onclick="openCreatorPolicies()" style="background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">📋 Leer condiciones</button>';
+    content.appendChild(notice);
   }
   // Check if already applied
   getDoc(doc(db,'creator_applications',S.cu.uid)).then(d=>{
