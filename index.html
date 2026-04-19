@@ -1098,6 +1098,17 @@ function renderComposer(){
     }
     pb.disabled=true;pb.innerHTML='<span class="spin"></span>';
     try{const _postContent=S.np;const _postImage=(S.nimgs&&S.nimgs[0])||null;
+    // Moderate images before publishing
+    if(S.nimgs&&S.nimgs.length>0){
+      pb.textContent='Verificando contenido...';
+      for(const img of S.nimgs){
+        const result=await moderateImage(img);
+        if(!result.safe){
+          alert('❌ Tu imagen contiene '+result.reason+' y no puede publicarse. Por favor revisa el contenido antes de publicar.');
+          pb.disabled=false;pb.textContent='Publicar';return;
+        }
+      }
+    }
     let _videoUrl=null;
     if(typeof _vFile!=='undefined'&&_vFile){
       const today=new Date().toDateString();
@@ -4030,6 +4041,38 @@ function openCreatorPolicies(){
   const footer=document.createElement('div');footer.style.cssText='text-align:center;padding:20px;color:var(--mut);font-size:12px;border-top:1px solid var(--bor);margin-top:16px;';footer.textContent='Última actualización: Abril 2026 · Xelfi';content.appendChild(footer);
   panel.appendChild(content);document.body.appendChild(panel);setTimeout(()=>panel.classList.add('open'),10);
   panel.style.transform='translateY(0)';
+}
+
+// CONTENT MODERATION - Sightengine
+const SE_USER = '1890138473';
+const SE_SECRET = 'gZUQjm3qstSqKHnAtwLzUCZzenBw43Zg';
+
+async function moderateImage(base64){
+  try{
+    // Convert base64 to blob
+    const arr=base64.split(',');const mime=arr[0].match(/:(.*?);/)[1];
+    const bstr=atob(arr[1]);let n=bstr.length;const u8=new Uint8Array(n);
+    while(n--)u8[n]=bstr.charCodeAt(n);
+    const blob=new Blob([u8],{type:mime});
+    const fd=new FormData();
+    fd.append('media',blob,'image.jpg');
+    fd.append('models','nudity-2.1,gore,weapon,recreational_drug,hate_symbols');
+    fd.append('api_user',SE_USER);
+    fd.append('api_secret',SE_SECRET);
+    const res=await fetch('https://api.sightengine.com/1.0/check.json',{method:'POST',body:fd});
+    const data=await res.json();
+    if(data.status!=='success')return{safe:true};
+    // Check thresholds
+    const nudity=data.nudity?.sexual_activity||data.nudity?.sexual_display||0;
+    const gore=data.gore?.prob||0;
+    const weapon=data.weapon?.classes?.firearm||data.weapon?.classes?.knife||0;
+    const drug=data.recreational_drug?.prob||0;
+    const hate=data.hate_symbols?.prob||0;
+    if(nudity>0.7||gore>0.8||weapon>0.85||drug>0.85||hate>0.7){
+      return{safe:false,reason:nudity>0.7?'contenido sexual':gore>0.8?'contenido violento':weapon>0.85?'armas':drug>0.85?'drogas':'contenido de odio'};
+    }
+    return{safe:true};
+  }catch(e){return{safe:true};} // Fail open if API error
 }
 
 async function loadStoreAds(container){
