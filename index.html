@@ -2331,9 +2331,31 @@ function openAdminPanel(){
     box.appendChild(s3);
 
     // Announcement
+    // === ANUNCIOS ADMIN ===
     const s4=document.createElement('div');s4.className='admin-section';
-    const t4=document.createElement('div');t4.className='admin-section-title';t4.textContent='Publicar anuncio como @xelfi';s4.appendChild(t4);
-    const inp4=document.createElement('textarea');inp4.className='admin-input';inp4.placeholder='Escribe el anuncio...';inp4.rows=3;inp4.id='admin-announce-txt';s4.appendChild(inp4);
+    const t4=document.createElement('div');t4.className='admin-section-title';t4.textContent='📢 Anuncios en el feed';s4.appendChild(t4);
+
+    // Button 1: Edit top banner (existing)
+    const topBtn=document.createElement('button');topBtn.className='admin-btn safe';topBtn.textContent='✏️ Editar anuncio principal (posición 1)';
+    topBtn.onclick=()=>{
+      const existing=S.xelfiBanner||'';
+      const txt=prompt('Texto del anuncio principal:',existing);
+      if(txt===null)return;
+      setDoc(doc(db,'config','banner'),{text:txt}).then(()=>{S.xelfiBanner=txt;render();});
+    };
+    s4.appendChild(topBtn);
+
+    // Button 2: Add feed ad at custom position
+    const addAdBtn=document.createElement('button');addAdBtn.className='admin-btn safe';addAdBtn.style.marginTop='8px';addAdBtn.textContent='➕ Añadir anuncio en posición del feed';
+    addAdBtn.onclick=()=>openAdminFeedAdForm();
+    s4.appendChild(addAdBtn);
+
+    // Button 3: Manage existing feed ads
+    const manageAdBtn=document.createElement('button');manageAdBtn.className='admin-btn danger';manageAdBtn.style.marginTop='8px';manageAdBtn.textContent='🗑️ Ver y borrar anuncios del feed';
+    manageAdBtn.onclick=()=>openManageFeedAds();
+    s4.appendChild(manageAdBtn);
+
+    box.appendChild(s4);
     // Reports section
     // Rankings section
     // Creator applications section
@@ -4066,6 +4088,78 @@ async function moderateImage(base64){
     console.log('Moderation result:',data);
     return data;
   }catch(e){console.error('Moderation error:',e);return{safe:true};}
+}
+
+function openAdminFeedAdForm(){
+  let ov=document.getElementById('feed-ad-form-ov');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='feed-ad-form-ov';ov.style.cssText='position:fixed;inset:0;background:#000b;z-index:4000;display:flex;align-items:flex-end;justify-content:center;';
+  const box=document.createElement('div');box.style.cssText='background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));max-height:90vh;overflow-y:auto;';
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;';title.textContent='➕ Nuevo anuncio en feed';
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';cl.onclick=()=>ov.remove();title.appendChild(cl);box.appendChild(title);
+
+  // Text
+  const lbl1=document.createElement('label');lbl1.className='ad-form-label';lbl1.textContent='Texto del anuncio *';box.appendChild(lbl1);
+  const ta=document.createElement('textarea');ta.className='ad-form-input';ta.placeholder='Escribe el texto del anuncio...';ta.rows=3;ta.style.resize='none';box.appendChild(ta);
+
+  // Position
+  const lbl2=document.createElement('label');lbl2.className='ad-form-label';lbl2.textContent='Posición en el feed (número) *';box.appendChild(lbl2);
+  const posInp=document.createElement('input');posInp.className='ad-form-input';posInp.type='number';posInp.min='2';posInp.placeholder='Ej: 3 = aparece después del 3er post';box.appendChild(posInp);
+  const posNote=document.createElement('div');posNote.style.cssText='font-size:11px;color:var(--mut);margin-bottom:10px;';posNote.textContent='La posición se mantiene aunque se publiquen nuevos posts. Mínimo posición 2.';box.appendChild(posNote);
+
+  // Image
+  const lbl3=document.createElement('label');lbl3.className='ad-form-label';lbl3.textContent='Imagen (opcional)';box.appendChild(lbl3);
+  let adImgData='';
+  const imgInp=document.createElement('input');imgInp.type='file';imgInp.accept='image/*';imgInp.style.cssText='font-size:13px;color:var(--mut);margin-bottom:8px;width:100%;';
+  const imgPrev=document.createElement('div');imgPrev.style.marginBottom='8px';
+  imgInp.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const i=new Image();i.onload=()=>{const cv=document.createElement('canvas');const mw=800;const rt=Math.min(1,mw/i.width);cv.width=Math.round(i.width*rt);cv.height=Math.round(i.height*rt);cv.getContext('2d').drawImage(i,0,0,cv.width,cv.height);adImgData=cv.toDataURL('image/jpeg',0.75);imgPrev.innerHTML='';const prev=document.createElement('img');prev.src=adImgData;prev.style.cssText='width:100%;border-radius:8px;max-height:160px;object-fit:cover;';imgPrev.appendChild(prev);};i.src=ev.target.result;};r.readAsDataURL(f);};
+  box.appendChild(imgInp);box.appendChild(imgPrev);
+
+  // Link
+  const lbl4=document.createElement('label');lbl4.className='ad-form-label';lbl4.textContent='Enlace externo (opcional)';box.appendChild(lbl4);
+  const linkInp=document.createElement('input');linkInp.className='ad-form-input';linkInp.type='url';linkInp.placeholder='https://ejemplo.com';box.appendChild(linkInp);
+  const lbl5=document.createElement('label');lbl5.className='ad-form-label';lbl5.textContent='Texto del botón del enlace';box.appendChild(lbl5);
+  const btnTxtInp=document.createElement('input');btnTxtInp.className='ad-form-input';btnTxtInp.placeholder='Ej: Ver más, Visitar web, Comprar...';box.appendChild(btnTxtInp);
+
+  const saveBtn=document.createElement('button');saveBtn.className='btn';saveBtn.style.width='100%';saveBtn.textContent='Publicar anuncio';
+  saveBtn.onclick=async()=>{
+    const txt=ta.value.trim();const pos=parseInt(posInp.value);
+    if(!txt){alert('Escribe el texto del anuncio.');return;}
+    if(!pos||pos<2){alert('Pon una posición válida (mínimo 2).');return;}
+    saveBtn.disabled=true;saveBtn.textContent='Publicando...';
+    try{
+      await addDoc(collection(db,'feed_ads'),{
+        text:txt,position:pos,image:adImgData||null,
+        link:linkInp.value.trim()||null,linkLabel:btnTxtInp.value.trim()||'Ver más',
+        createdAt:serverTimestamp(),active:true
+      });
+      ov.remove();alert('✅ Anuncio publicado en posición '+pos);
+    }catch(e){alert('Error: '+e.message);saveBtn.disabled=false;saveBtn.textContent='Publicar anuncio';}
+  };
+  box.appendChild(saveBtn);ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
+}
+
+async function openManageFeedAds(){
+  let ov=document.getElementById('manage-ads-ov');if(ov)ov.remove();
+  ov=document.createElement('div');ov.id='manage-ads-ov';ov.style.cssText='position:fixed;inset:0;background:#000b;z-index:4000;display:flex;align-items:flex-end;justify-content:center;';
+  const box=document.createElement('div');box.style.cssText='background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));';
+  const title=document.createElement('div');title.style.cssText='font-weight:900;font-size:16px;font-family:Nunito,sans-serif;margin-bottom:16px;display:flex;justify-content:space-between;';title.textContent='📋 Anuncios en el feed';
+  const cl=document.createElement('button');cl.style.cssText='background:transparent;border:none;color:var(--mut);font-size:20px;cursor:pointer;';cl.textContent='✕';cl.onclick=()=>ov.remove();title.appendChild(cl);box.appendChild(title);
+  try{
+    const sn=await getDocs(query(collection(db,'feed_ads'),orderBy('position','asc')));
+    if(sn.empty){box.innerHTML+='<div style="text-align:center;padding:20px;color:var(--mut);">No hay anuncios</div>';}
+    sn.forEach(d=>{
+      const ad={id:d.id,...d.data()};
+      const card=document.createElement('div');card.style.cssText='background:var(--surf);border:1px solid var(--bor);border-radius:12px;padding:12px;margin-bottom:10px;';
+      card.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;font-size:12px;color:var(--acc2);">Posición '+ad.position+'</span></div>';
+      const txt=document.createElement('div');txt.style.cssText='font-size:13px;color:var(--txt);margin-bottom:6px;';txt.textContent=ad.text;card.appendChild(txt);
+      if(ad.image){const img=document.createElement('img');img.src=ad.image;img.style.cssText='width:100%;border-radius:8px;max-height:100px;object-fit:cover;margin-bottom:6px;';card.appendChild(img);}
+      if(ad.link){const lnk=document.createElement('div');lnk.style.cssText='font-size:11px;color:var(--mut);';lnk.textContent='🔗 '+ad.link;card.appendChild(lnk);}
+      const delBtn=document.createElement('button');delBtn.style.cssText='background:#ff4d6d22;border:1px solid #ff4d6d44;color:#ff4d6d;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:800;cursor:pointer;margin-top:8px;width:100%;';delBtn.textContent='🗑️ Eliminar';
+      delBtn.onclick=async()=>{if(!confirm('¿Eliminar este anuncio?'))return;await deleteDoc(doc(db,'feed_ads',ad.id));card.remove();};
+      card.appendChild(delBtn);box.appendChild(card);
+    });
+  }catch(e){box.innerHTML+='<div style="color:var(--mut);">Error: '+e.message+'</div>';}
+  ov.appendChild(box);ov.onclick=e=>{if(e.target===ov)ov.remove();};document.body.appendChild(ov);
 }
 
 async function loadStoreAds(container){
