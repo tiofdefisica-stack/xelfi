@@ -4044,35 +4044,28 @@ function openCreatorPolicies(){
 }
 
 // CONTENT MODERATION - Sightengine
-const SE_USER = '1890138473';
-const SE_SECRET = 'gZUQjm3qstSqKHnAtwLzUCZzenBw43Zg';
-
 async function moderateImage(base64){
   try{
-    // Convert base64 to blob
-    const arr=base64.split(',');const mime=arr[0].match(/:(.*?);/)[1];
-    const bstr=atob(arr[1]);let n=bstr.length;const u8=new Uint8Array(n);
-    while(n--)u8[n]=bstr.charCodeAt(n);
-    const blob=new Blob([u8],{type:mime});
-    const fd=new FormData();
-    fd.append('media',blob,'image.jpg');
-    fd.append('models','nudity-2.1,gore,weapon,recreational_drug,hate_symbols');
-    fd.append('api_user',SE_USER);
-    fd.append('api_secret',SE_SECRET);
-    const res=await fetch('https://api.sightengine.com/1.0/check.json',{method:'POST',body:fd});
+    // Compress image to max 200x200 for moderation to stay under Worker limits
+    const img=new Image();
+    const compressed=await new Promise(resolve=>{
+      img.onload=()=>{
+        const cv=document.createElement('canvas');
+        const max=300;const ratio=Math.min(1,max/Math.max(img.width,img.height));
+        cv.width=Math.round(img.width*ratio);cv.height=Math.round(img.height*ratio);
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        resolve(cv.toDataURL('image/jpeg',0.5));
+      };
+      img.src=base64;
+    });
+    const res=await fetch('https://xelfi-ai.tiofdefisica.workers.dev/moderate-image',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({base64:compressed})
+    });
     const data=await res.json();
-    if(data.status!=='success')return{safe:true};
-    // Check thresholds
-    const nudity=data.nudity?.sexual_activity||data.nudity?.sexual_display||0;
-    const gore=data.gore?.prob||0;
-    const weapon=data.weapon?.classes?.firearm||data.weapon?.classes?.knife||0;
-    const drug=data.recreational_drug?.prob||0;
-    const hate=data.hate_symbols?.prob||0;
-    if(nudity>0.7||gore>0.8||weapon>0.85||drug>0.85||hate>0.7){
-      return{safe:false,reason:nudity>0.7?'contenido sexual':gore>0.8?'contenido violento':weapon>0.85?'armas':drug>0.85?'drogas':'contenido de odio'};
-    }
-    return{safe:true};
-  }catch(e){return{safe:true};} // Fail open if API error
+    console.log('Moderation result:',data);
+    return data;
+  }catch(e){console.error('Moderation error:',e);return{safe:true};}
 }
 
 async function loadStoreAds(container){
