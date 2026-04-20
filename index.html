@@ -1010,7 +1010,30 @@ function renderFeed(){
     const rest=list.filter(p=>!(p.isPinned&&p.isXelfi));
     const sorted=[...pinned,...rest];
     if(!sorted.length){con.innerHTML='<div class="empty">Se el primero en publicar! 🚀</div>';}
-    else sorted.forEach((p,i)=>{try{if(i>0&&i%5===0)con.appendChild(buildPromo(Math.floor(i/5)-1));const pe=renderPost(p);con.appendChild(pe);if(S.oc[p.id]){pe.appendChild(buildCmts(p));}checkAI(p);}catch(e){}});
+    else{
+      // Load feed ads
+      let feedAds=[];
+      try{const adSn=await getDocs(collection(db,'feed_ads'));adSn.forEach(d=>{if(d.data().active!==false)feedAds.push({id:d.id,...d.data()});});}catch(e){}
+      sorted.forEach((p,i)=>{
+        try{
+          // Insert feed ads before this post if position matches
+          feedAds.forEach(ad=>{
+            if(ad.position===i+1){
+              const adCard=document.createElement('div');adCard.className='card';adCard.style.cssText='border-color:#c060ff33;background:var(--card);';
+              const badge=document.createElement('div');badge.style.cssText='font-size:10px;font-weight:800;color:#c060ff;font-family:Nunito,sans-serif;letter-spacing:.5px;margin-bottom:8px;';badge.textContent='PUBLICIDAD · @xelfi';adCard.appendChild(badge);
+              if(ad.image){const img=document.createElement('img');img.src=ad.image;img.style.cssText='width:calc(100% + 28px);margin-left:-14px;margin-right:-14px;max-height:220px;object-fit:cover;display:block;margin-bottom:10px;border-radius:0;';adCard.appendChild(img);}
+              const adTxt=document.createElement('div');adTxt.style.cssText='font-size:14px;line-height:1.6;color:var(--txt);margin-bottom:10px;white-space:pre-wrap;';adTxt.textContent=ad.text;adCard.appendChild(adTxt);
+              if(ad.link){const lnkBtn=document.createElement('button');lnkBtn.style.cssText='background:linear-gradient(135deg,#c060ff,#9b35e8);color:#fff;border:none;border-radius:10px;padding:10px;width:100%;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;';lnkBtn.textContent=ad.linkLabel||'Ver más';lnkBtn.onclick=()=>window.open(ad.link,'_blank');adCard.appendChild(lnkBtn);}
+              con.appendChild(adCard);
+            }
+          });
+          if(i>0&&i%5===0)con.appendChild(buildPromo(Math.floor(i/5)-1));
+          const pe=renderPost(p);con.appendChild(pe);
+          if(S.oc[p.id]){pe.appendChild(buildCmts(p));}
+          checkAI(p);
+        }catch(e){}
+      });
+    }
     requestAnimationFrame(()=>window.scrollTo(0,sy));
   },e=>console.error(e));
   setTimeout(()=>loadSugg(main),500);
