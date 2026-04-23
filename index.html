@@ -605,7 +605,7 @@ async function callXelfiAI(question,postId,imageUrl){
 async function sendFriendReq(toUid){
   try{
     const ref=await addDoc(collection(db,'friendships'),{from:S.cu.uid,to:toUid,status:'pending',createdAt:serverTimestamp()});
-    await addNotif(toUid,'freq',ref.id);
+    await addNotif(toUid,'freq',null,ref.id);
   }catch(e){alert('Error: '+e.message);}
 }
 
