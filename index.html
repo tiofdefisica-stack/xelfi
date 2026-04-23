@@ -2039,6 +2039,7 @@ async function renderSettings(app){
   sNormas.appendChild(row2('📜','Normas de la comunidad',()=>openNormas()));
   sNormas.appendChild(row2('🎬','Programa de Creadores',()=>openCreatorApplication()));
   sNormas.appendChild(row2('📋','Políticas para Creadores',()=>openCreatorPolicies()));
+  sNormas.appendChild(row2('🔒','Política de Privacidad',()=>window.open('https://xelfi.live/privacy.html','_blank')));
   sNormas.appendChild(row2('⚑','Cómo funciona el sistema de denuncias',()=>openNormas()));
   main.appendChild(sNormas);
   const sInst=sec2('App');sInst.appendChild(row2('📲','Instalar Xelfi en tu movil',()=>installApp()));main.appendChild(sInst);
