@@ -2,7 +2,7 @@
   "relation": ["delegate_permission/common.handle_all_urls"],
   "target": {
     "namespace": "android_app",
-    "package_name": "live.xelfi.app",
-    "sha256_cert_fingerprints": ["44:09:92:2E:14:D7:2E:1E:3F:B4:77:2B:7C:65:59:B2:59:1D:0D:B1:63:16:A4:67:24:90:BA:DA:FB:BE:E6:2E"]
+    "package_name": "live.xelfi.www.twa",
+    "sha256_cert_fingerprints": ["F9:73:4A:B2:41:0D:BE:A5:B9:D9:FF:E2:46:02:DE:3B:EF:1D:E5:DA:D8:E0:E4:54:F1:2F:C3:F2:68:BD:61:F1"]
   }
 }]
